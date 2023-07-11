@@ -21,11 +21,20 @@ Widget topSection({required SignUpController controller}) {
             ),
           )),
       const SizedBox(height: 40),
-      customTextField(
-          hintText: "Email", controller: controller.signUpEmailController),
+      TextFieldForSignUp(
+          hintText: "Email",
+          controller: controller.signUpEmailController,
+          onChanged: (val) {
+            if (GetUtils.isEmail(val)) {
+              controller.isButtonEnable();
+            }
+          }),
       const SizedBox(height: 20),
-      customTextField(
+      TextFieldForSignUp(
           hintText: "Password",
+          onChanged: (val) {
+            controller.isButtonEnable();
+          },
           controller: controller.signUpPasswordController,
           isPass: true,
           obsecure: controller.hidePassword.value,
@@ -79,16 +88,18 @@ Widget bottomSection() {
   );
 }
 
-Widget customTextField({
+Widget TextFieldForSignUp({
   required String hintText,
   bool isPass = false,
   Widget? suffixIcon,
   bool obsecure = false,
+  Function(String)? onChanged,
   required TextEditingController controller,
 }) {
   return TextFormField(
     controller: controller,
     obscureText: obsecure,
+    onChanged: (val) => onChanged!(val),
     decoration: InputDecoration(
       hintText: hintText,
       prefixIcon: isPass

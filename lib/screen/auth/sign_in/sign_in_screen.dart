@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taska/constant/color.dart';
+import 'package:taska/constant/global_function.dart';
+import 'package:taska/constant/snackBar.dart';
 import 'package:taska/screen/auth/sign_in/sign_in_widget.dart';
 
-import '../../../widget/custom_button.dart';
+import '../../../constant/utils.dart';
 import 'controller.dart';
 
 class SignInScreen extends StatelessWidget {
@@ -14,7 +16,16 @@ class SignInScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        elevation: 0,
+        leading: GestureDetector(
+          onTap: () => Get.back(),
+          child: const Icon(
+            Icons.arrow_back,
+            color: Colors.black,
+          ),
+        ),
+      ),
       body: Obx(
         () => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14.0).copyWith(
@@ -27,51 +38,25 @@ class SignInScreen extends StatelessWidget {
                 topSection(
                   controller: controller,
                 ),
-                SizedBox(height: Get.height * 0.02),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                        onTap: () {
-                          controller.rememberMeFunc();
-                        },
-                        child: controller.rememberMe.value
-                            ? Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.circular(4)),
-                                child: const Icon(
-                                  Icons.check,
-                                  size: 14,
-                                  color: Colors.white,
-                                ))
-                            : Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: primaryColor)),
-                              )),
-                    SizedBox(width: Get.width * 0.02),
-                    const Text(
-                      'Remember me',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                    )
-                  ],
-                ),
                 SizedBox(height: Get.height * 0.03),
                 CustomButton(
                   buttonText: 'Sign in',
-                  func: () {},
+                  isEnable: controller.isSignButtonEnable.value,
+                  func: () {
+                    controller.signInUserWithEmailAndPass(
+                        controller.signInEmailController.text.trim(),
+                        controller.signInPasswordController.text.trim());
+                  },
                 ),
                 SizedBox(height: Get.height * 0.02),
-                const Text(
-                  "Forgot the password?",
-                  style: TextStyle(color: primaryColor),
+                GestureDetector(
+                  onTap: () {
+                    Get.toNamed('/ForgotPassword');
+                  },
+                  child: const Text(
+                    "Forgot the password?",
+                    style: TextStyle(color: primaryColor),
+                  ),
                 ),
                 SizedBox(height: Get.height * 0.06),
                 bottomSection(),
@@ -79,7 +64,7 @@ class SignInScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Already have an account? ",
+                    Text("Don't have an account? ",
                         style: TextStyle(
                           color: Colors.grey.withOpacity(0.6),
                         )),

@@ -13,14 +13,31 @@ dependencies:
   flutter:
     sdk: flutter
 
+  intl:
+  image_picker:
+  shared_preferences: ^2.0.12
+  flutter_svg:
+
   cupertino_icons: ^1.0.2
+  fluentui_system_icons:
+  google_fonts:
+
+
+  dots_indicator: ^3.0.0
+  flutter_holo_date_picker: 1.1.0
+  fl_country_code_picker: ^0.1.4
+  pinput:
+  carousel_slider:
+  animated_bottom_navigation_bar:
+  stylish_bottom_bar:
+
+  firebase_core:
+  firebase_auth:
+  cloud_firestore:
 
   get:
-  google_fonts:
-  flutter_svg:
-  dots_indicator:
-  get_storage:
-  shared_preferences: ^2.0.12
+
+
 
 dev_dependencies:
   flutter_test:
@@ -39,6 +56,7 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/flag/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

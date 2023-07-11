@@ -31,9 +31,9 @@ class SignInSignUp extends StatelessWidget {
                       color: Colors.grey.withOpacity(0.6),
                     )),
                 const SizedBox(width: 4),
-                GestureDetector(
+                InkWell(
                   onTap: () {
-                    Get.to(() => SignUpScreen());
+                    Get.toNamed('/SignUp');
                   },
                   child: const Text("Sign up",
                       style: TextStyle(

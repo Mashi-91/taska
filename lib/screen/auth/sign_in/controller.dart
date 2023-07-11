@@ -1,19 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:taska/screen/global_controller.dart';
 
-class SignInController extends GetxController {
-  final TextEditingController signInEmailController = TextEditingController();
-  final TextEditingController signInPasswordController =
-      TextEditingController();
+class SignInController extends GlobalController {
+  // <<<<<<<<<<<<<<<<<<<<<<<<< Controllers >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  late final TextEditingController signInEmailController;
+  late final TextEditingController signInPasswordController;
 
-  var hidePassword = true.obs;
-  var rememberMe = false.obs;
+  final signInFormKey = GlobalKey<FormState>();
 
-  showPassword() {
+  Rx<bool> hidePassword = true.obs;
+  var isSignButtonEnable = false.obs;
+
+  @override
+  void onInit() {
+    signInEmailController = TextEditingController();
+    signInPasswordController = TextEditingController();
+
+    super.onInit();
+  }
+
+  @override
+  void dispose() {
+    signInEmailController.dispose();
+    signInPasswordController.dispose();
+    super.dispose();
+  }
+
+  // <<<<<<<<<<<<<<<<< Functions >>>>>>>>>>>>>>>>>>>>>>>
+  void showPassword() {
     hidePassword.value = !hidePassword.value;
   }
 
-  rememberMeFunc() {
-    rememberMe.value = !rememberMe.value;
+  bool isSignInButtonFunc() {
+    if (GetUtils.isEmail(signInEmailController.text) &&
+        GetUtils.isLengthGreaterThan(signInPasswordController.text, 6)) {
+      isSignButtonEnable.value = true;
+    } else {
+      isSignButtonEnable.value = false;
+    }
+    return isSignButtonEnable.value;
   }
 }

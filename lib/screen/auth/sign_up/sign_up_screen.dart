@@ -1,10 +1,13 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taska/constant/color.dart';
 import 'package:taska/screen/auth/sign_up/controller.dart';
 import 'package:taska/screen/auth/sign_up/sign_up_widget.dart';
+import 'package:taska/screen/fill_your_profile/controller.dart';
 
-import '../../../widget/custom_button.dart';
+import '../../../constant/utils.dart';
 
 class SignUpScreen extends StatelessWidget {
   SignUpScreen({super.key});
@@ -14,7 +17,7 @@ class SignUpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: customAppbar(isGoBack: true),
       body: Obx(
         () => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14.0).copyWith(
@@ -27,47 +30,14 @@ class SignUpScreen extends StatelessWidget {
                 topSection(
                   controller: controller,
                 ),
-                SizedBox(height: Get.height * 0.02),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                        onTap: () {
-                          controller.rememberMeFunc();
-                        },
-                        child: controller.rememberMe.value
-                            ? Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.circular(4)),
-                                child: const Icon(
-                                  Icons.check,
-                                  size: 14,
-                                  color: Colors.white,
-                                ))
-                            : Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: primaryColor)),
-                              )),
-                    SizedBox(width: Get.width * 0.02),
-                    const Text(
-                      'Remember me',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                    )
-                  ],
-                ),
                 SizedBox(height: Get.height * 0.03),
                 CustomButton(
                   buttonText: 'Sign up',
+                  isEnable: controller.isSignUpButtonEnable.value,
                   func: () {
-                    Get.toNamed('/FillYourProfile');
+                    controller.createEmailAndPassword(
+                        controller.signUpEmailController.text.trim(),
+                        controller.signUpPasswordController.text.trim());
                   },
                 ),
                 SizedBox(height: Get.height * 0.08),

@@ -1,14 +1,12 @@
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taska/constant/global_text.dart';
-import 'package:taska/screen/auth/sign_in_sign_up.dart';
 import 'package:taska/screen/onBoardingScreen/widget/widget.dart';
 
 import '../../constant/tokens.dart';
-import '../../widget/custom_button.dart';
+import '../../constant/utils.dart';
 import 'controller.dart';
 
 class OnBoardingScreen extends StatefulWidget {
@@ -68,7 +66,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
               child: Column(
                 children: [
                   CustomButton(
-                    isDisable: false,
+                      isEnable: true,
                       buttonText: 'Next',
                       func: () async {
                         final prefs = await SharedPreferences.getInstance();
@@ -80,8 +78,12 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   CustomButton(
                     buttonText: 'Skip',
                     isSkip: true,
-                    func: () {
-                      controller.skipButtonFunc();
+                    isEnable: true,
+                    func: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      prefs.setInt(ONBOARDINGTOKEN, 1).then((value) {
+                        controller.skipButtonFunc();
+                      });
                     },
                   ),
                 ],

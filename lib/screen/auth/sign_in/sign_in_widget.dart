@@ -8,35 +8,42 @@ import 'package:taska/screen/auth/sign_in/controller.dart';
 import '../../../constant/color.dart';
 
 Widget topSection({required SignInController controller}) {
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(
-          width: 250,
-          child: Text(
-            "Login to your Account",
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
-          )),
-      const SizedBox(height: 40),
-      customTextField(
-          hintText: "Email", controller: controller.signInEmailController),
-      const SizedBox(height: 20),
-      customTextField(
-          hintText: "Password",
-          controller: controller.signInPasswordController,
-          isPass: true,
-          obsecure: controller.hidePassword.value,
-          suffixIcon: GestureDetector(
-            onTap: controller.showPassword,
-            child: controller.hidePassword.value
-                ? const Icon(Icons.visibility_off, color: Colors.grey, size: 20)
-                : const Icon(Icons.visibility, color: Colors.grey, size: 20),
-          )),
-    ],
+  return Form(
+    key: controller.signInFormKey,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(
+            width: 250,
+            child: Text(
+              "Login to your Account",
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
+            )),
+        const SizedBox(height: 40),
+        customTextField(
+            hintText: "Email",
+            onChanged: (val) => controller.isSignInButtonFunc(),
+            controller: controller.signInEmailController),
+        const SizedBox(height: 20),
+        customTextField(
+            hintText: "Password",
+            onChanged: (val) => controller.isSignInButtonFunc(),
+            controller: controller.signInPasswordController,
+            isPass: true,
+            obsecure: controller.hidePassword.value,
+            suffixIcon: GestureDetector(
+              onTap: controller.showPassword,
+              child: controller.hidePassword.value
+                  ? const Icon(Icons.visibility_off,
+                      color: Colors.grey, size: 20)
+                  : const Icon(Icons.visibility, color: Colors.grey, size: 20),
+            )),
+      ],
+    ),
   );
 }
 
@@ -85,9 +92,13 @@ Widget customTextField({
   bool isPass = false,
   Widget? suffixIcon,
   bool obsecure = false,
+  Key? key,
+  required Function(String) onChanged,
   required TextEditingController controller,
 }) {
   return TextFormField(
+    onChanged: (val) => onChanged(val),
+    key: key,
     controller: controller,
     obscureText: obsecure,
     decoration: InputDecoration(

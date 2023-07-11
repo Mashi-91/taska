@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:taska/widget/custom_button.dart';
+
+import '../../../constant/utils.dart';
 
 Widget topSection() {
   return Center(
@@ -29,7 +30,7 @@ Widget topSection() {
   );
 }
 
-Widget bottomSection({required Function signWithPass}) {
+Widget bottomSection({required VoidCallback signWithPass}) {
   return Column(
     children: [
       Padding(
@@ -62,8 +63,9 @@ Widget bottomSection({required Function signWithPass}) {
       ),
       SizedBox(height: Get.height * 0.05),
       CustomButton(
+        isEnable: true,
         buttonText: "Sign in with password",
-        func: () => signWithPass(),
+        func: signWithPass,
         width: 324,
         height: 50,
       ),
