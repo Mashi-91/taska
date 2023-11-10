@@ -8,8 +8,8 @@ class SignUpController extends GlobalController {
   late final TextEditingController signUpPasswordController;
 
   //<<<<<<<<<<<<<< variable for Storing data >>>>>>>>>>>>>>>>>>
-  var hidePassword = true.obs;
-  var isSignUpButtonEnable = false.obs;
+  var hidePassword = true;
+  var isSignUpButtonEnable = false;
 
   @override
   void onInit() {
@@ -27,16 +27,19 @@ class SignUpController extends GlobalController {
 
   // <<<<<<<<<<<<<<<< Toggle Functions & set Values >>>>>>>>>>>>>>>>>>
   showPassword() {
-    hidePassword.value = !hidePassword.value;
+    hidePassword = !hidePassword;
+    update();
   }
 
   bool isButtonEnable() {
     if (signUpEmailController.text.isNotEmpty &&
         signUpPasswordController.text.isNotEmpty) {
-      isSignUpButtonEnable.value = true;
+      isSignUpButtonEnable = true;
+      update();
     } else {
-      isSignUpButtonEnable.value = false;
+      isSignUpButtonEnable = false;
+      update();
     }
-    return isSignUpButtonEnable.value;
+    return isSignUpButtonEnable;
   }
 }

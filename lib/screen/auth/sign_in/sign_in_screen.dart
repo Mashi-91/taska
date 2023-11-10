@@ -43,9 +43,10 @@ class SignInScreen extends StatelessWidget {
                   buttonText: 'Sign in',
                   isEnable: controller.isSignButtonEnable.value,
                   func: () {
-                    controller.signInUserWithEmailAndPass(
-                        controller.signInEmailController.text.trim(),
-                        controller.signInPasswordController.text.trim());
+                    controller.signInUserWithEmailAndPass(context,
+                        email: controller.signInEmailController.text.trim(),
+                        password:
+                            controller.signInPasswordController.text.trim());
                   },
                 ),
                 SizedBox(height: Get.height * 0.02),

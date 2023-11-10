@@ -3,7 +3,7 @@ class FillProfileModel {
   final String fullName;
   final String userName;
   final String imgUrl;
-  final String? emailAddress;
+  final String emailAddress;
   final String? dob;
   final String? phoneNumber;
   final String? role;
@@ -13,7 +13,7 @@ class FillProfileModel {
     required this.fullName,
     required this.userName,
     required this.imgUrl,
-    this.emailAddress,
+    required this.emailAddress,
     required this.dob,
     required this.phoneNumber,
     required this.role,

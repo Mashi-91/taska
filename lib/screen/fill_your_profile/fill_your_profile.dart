@@ -67,21 +67,21 @@ class _FillYourProfileState extends State<FillYourProfile> {
                   buttonText: 'Continue',
                   isEnable: controller.isEnabled.value,
                   func: () async {
-                    await controller.storeUserDetails(
+                    await controller.storeUserDetails(context,
                         createUserModel: FillProfileModel(
                           id: controller.currentUser!.uid,
-                          fullName: controller.fullNameController.text,
-                          userName: controller.userNameController.text,
+                          fullName: controller.fullNameController.text.trim(),
+                          userName: controller.userNameController.text.trim(),
                           imgUrl: controller.image.value,
                           dob: controller.dateOfBirth.value,
-                          emailAddress: controller.signUpEmailController.text,
-                          phoneNumber: controller.phoneController.text,
-                          role: controller.roleController.text,
+                          emailAddress:
+                              controller.fillYourEmailAddress.text.trim(),
+                          phoneNumber: controller.phoneController.text.trim(),
+                          role: controller.roleController.text.trim(),
                         ),
                         controller: controller);
-                    log("message;");
                   },
-                )
+                ),
               ],
             ),
           ),

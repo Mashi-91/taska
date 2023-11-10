@@ -1,33 +1,80 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:taska/model/porject_model.dart';
+import 'package:taska/constant/routes.dart';
+import 'package:taska/model/today_task_model.dart';
 import '../constant/snackBar.dart';
 import '../constant/utils.dart';
 import '../model/fill_profile_model.dart';
-import '../model/home_model.dart';
 import '../screen/fill_your_profile/controller.dart';
 
 class GlobalController extends GetxController {
-  //<<<<<<<<<<<<<<<<<< Firebase Instances >>>>>>>>>>>>>>>>>>>>>>>>
+  //<<<<<<<<<<<<<<<<<< Local Variables >>>>>>>>>>>>>>>>>>>>>>>>
+  var isLoading = false;
+  List taskData = [];
+  var imgUrl = '';
+
+  //<<<<<<<<<<<<<<<<<< Firebase & FireStore Instances >>>>>>>>>>>>>>>>>>>>>>>>
 
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final User? currentUser = FirebaseAuth.instance.currentUser;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
+  final userCollection = FirebaseFirestore.instance.collection('users');
+  final firebaseStorageRef = FirebaseStorage.instance.ref();
+  var currentProjectUID = '';
+  var taskList = [];
+  var taskUID = '';
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> get projectSnapshot =>
+      userCollection
+          .doc(currentUser?.uid)
+          .collection('projects')
+          .orderBy('uid', descending: true)
+          .snapshots();
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> getTaskSnapshot(dynamic data) =>
+      userCollection
+          .doc(currentUser?.uid)
+          .collection('projects')
+          .doc(data?['uid'])
+          .collection('task')
+          .snapshots();
+
+  Future<QuerySnapshot<Map<String, dynamic>>> getTask(dynamic data) =>
+      userCollection
+          .doc(currentUser?.uid)
+          .collection('projects')
+          .doc(data)
+          .collection('task')
+          .get();
+
+  @override
+  void onInit() {
+    super.onInit();
+  }
 
   // <<<<<<<<<<<<<<<<<<< Firebase Functions >>>>>>>>>>>>>>>>>>>
 
-  createEmailAndPassword(String email, String password) async {
+  createEmailAndPassword(BuildContext context,
+      {required String email, required String password}) async {
     try {
+      // <<<<<<<<<<<<<< Show Loading >>>>>>>>>>>>>>>>>>>
+      customLoadingIndicator(context);
       //<<<<<<<<<<<<<<< Create a User >>>>>>>>>>>>>>>>>>>>>>
       await firebaseAuth
           .createUserWithEmailAndPassword(email: email, password: password)
-          .then((value) {
-        Get.offNamed('/FillYourProfile');
+          .then((value) async {
+        await CustomSnackBar.snackBarMsg(
+            title: 'Success',
+            msg: 'Your Account has been created, add your profile detail!',
+            snackPosition: SnackPosition.TOP);
+        Get.offAllNamed('/FillYourProfile');
       });
     } on FirebaseAuthException catch (e) {
       if (e.code == "email-already-in-use") {
@@ -56,10 +103,13 @@ class GlobalController extends GetxController {
 
 // <<<<<<<<<<<<<< Store Additional Date in Database >>>>>>>>>>>>>>>>>>>
 
-  Future<void> storeUserDetails(
+  Future<void> storeUserDetails(BuildContext context,
       {required FillProfileModel createUserModel,
       required FillProfileController controller}) async {
     try {
+      // <<<<<<<<<<<<<< Show Loading >>>>>>>>>>>>>>>>>>>
+      customLoadingIndicator(context);
+      //<<<<<<<<<<<<<<< Store User Data >>>>>>>>>>>>>>>>>>>>>>
       if (controller.image.isEmpty) {
         CustomSnackBar.snackBarMsg(
             title: 'Store-User-Error', msg: 'Please add your profile image.');
@@ -72,6 +122,9 @@ class GlobalController extends GetxController {
       } else if (controller.dateOfBirth.isEmpty) {
         CustomSnackBar.snackBarMsg(
             title: 'Store-User-Error', msg: 'Enter your Date of Birth.');
+      } else if (controller.fillYourEmailAddress.text.isEmpty) {
+        CustomSnackBar.snackBarMsg(
+            title: 'Store-User-Error', msg: 'Enter your Email-ID.');
       } else if (controller.phoneController.text.isEmpty) {
         CustomSnackBar.snackBarMsg(
             title: 'Store-User-Error', msg: 'Enter your Phone Number.');
@@ -79,15 +132,18 @@ class GlobalController extends GetxController {
         CustomSnackBar.snackBarMsg(
             title: 'Store-User-Error', msg: 'Enter your Role.');
       } else {
-        await currentUser?.updateDisplayName(createUserModel.userName);
-        await currentUser?.updatePhotoURL(createUserModel.imgUrl);
+        await currentUser
+            ?.updateDisplayName(controller.userNameController.text);
+        await currentUser?.updatePhotoURL(controller.image.value);
+        // await currentUser?.updatePhoneNumber(Uri.parse(controller.phoneController.text));
         await fireStore
             .collection('users')
-            .add(createUserModel.toJson())
+            .doc(currentUser?.uid)
+            .set(createUserModel.toJson())
             .then((value) async {
           await CustomSnackBar.snackBarMsg(
               title: 'Success', msg: 'Your profile has been created.');
-          Get.offAllNamed("/");
+          Get.offAllNamed("/SignIn");
         });
       }
     } on FirebaseFirestore catch (e) {
@@ -97,13 +153,16 @@ class GlobalController extends GetxController {
 
   // <<<<<<<<<<<<<<<<<< UserSign >>>>>>>>>>>>>>>>>>>>>
 
-  signInUserWithEmailAndPass(String email, String password) async {
+  signInUserWithEmailAndPass(BuildContext context,
+      {required String email, required String password}) async {
     try {
-      //<<<<<<<<<<<<<<< Create a User >>>>>>>>>>>>>>>>>>>>>>
+      // <<<<<<<<<<<<<< Show Loading >>>>>>>>>>>>>>>>>>>
+      customLoadingIndicator(context);
+      //<<<<<<<<<<<<<<< SignInUser >>>>>>>>>>>>>>>>>>>>>>
       await firebaseAuth
           .signInWithEmailAndPassword(email: email, password: password)
           .then((value) {
-        Get.offAllNamed('/HomeScreen');
+        Get.offAllNamed('/');
       });
     } on FirebaseAuthException catch (e) {
       if (e.code == "email-already-in-use") {
@@ -161,7 +220,7 @@ class GlobalController extends GetxController {
               CustomButton(
                 buttonText: 'Go to Homepage',
                 func: () {
-                  Get.offAllNamed('/SignInSignUp');
+                  Get.offAllNamed(signInSignUpScreen);
                 },
                 width: 230,
                 height: 46,
@@ -187,8 +246,8 @@ class GlobalController extends GetxController {
 
   // <<<<<<<<<<<<<<<<<<< Store Data to Database >>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-  final List<HomeModel> items = [
-    HomeModel(
+  List<Map<String, dynamic>> items = [
+    /*HomeModel(
         // id: firebaseAuth.currentUser,
         homeImg: "assets/images/home_1_image.jpg",
         title: "Tiki Mobile App Project",
@@ -200,19 +259,173 @@ class GlobalController extends GetxController {
         title: "Job Portal Website App",
         progress: "67 / 86",
         subTitle: 'External Client Project - Dec 31, 2023',
-        onPress: () {}),
+        onPress: () {}),*/
   ];
 
-  Future<void> storeData(
-      {required String title, required String options}) async {
+// <<<<<<<<<<<<<<<<<<<<<< Create A Project >>>>>>>>>>>>>>>>>>>>>>>>>>>
+  Future storeProject({String? title}) async {
+    final uid = Timestamp.now().seconds.toString();
+    final map = {
+      'title': title,
+      'uid': uid,
+      'cover': '',
+      'done': false,
+    };
+    Get.back();
     try {
-      fireStore.collection('users/$currentUser/Projects/').add({
-        'id': currentUser,
-        'title': title,
-        'options': options,
-      }).then((value) => log('Successfully Uploaded!'));
+      await userCollection
+          .doc(currentUser?.uid)
+          .collection('projects')
+          .doc(uid)
+          .set(map)
+          .then((value) async {
+        Get.toNamed(titleScreen, arguments: map);
+        currentProjectUID = uid;
+        update();
+      });
     } on FirebaseFirestore catch (e) {
-      log('$e');
+      log('Hlo This is Error From StoreData $e');
     }
+  }
+
+  uploadImg({File? cover}) async {
+    try {
+      final path = cover!.path
+          .replaceAll('/data/user/0/com.example.taska/app_flutter/', '');
+      var upload =
+          await firebaseStorageRef.child('projectCover/$path').putFile(cover);
+      await upload.ref.getDownloadURL().then((value) {
+        imgUrl = value;
+        update();
+      });
+      log('UploadSection: $imgUrl');
+    } catch (e) {
+      log('Showing Error uploadImgSection: $e');
+    }
+  }
+
+  updateProject({File? cover}) async {
+    try {
+      await userCollection
+          .doc(currentUser?.uid)
+          .collection('projects')
+          .doc(currentProjectUID)
+          .set({
+        'cover': imgUrl ,
+      });
+      await uploadImg(cover: cover);
+    } on FirebaseFirestore catch (e) {
+      log('Showing Error uploadProjectSection: $e');
+    }
+  }
+
+  addTaskUID(String? uid) async {
+    try {
+      await userCollection
+          .doc(currentUser!.uid)
+          .collection('projects')
+          .doc(uid)
+          .set({
+        'taskUID': taskUID,
+      });
+      log(taskUID);
+    } on FirebaseFirestore catch (e) {
+      log('Showing Error while adding taskUID: $e');
+    }
+  }
+
+  Future<String?> getCoverImageUrl(String projectId) async {
+    try {
+      final ref =
+          FirebaseStorage.instance.ref().child('projectCover/$projectId.jpg');
+      try {
+        final url = await ref.getDownloadURL();
+        return url;
+      } catch (e) {
+        log('Showing Error DownloadCoverImageUrlSection: $e');
+      }
+      // Adjust path as needed
+    } catch (e) {
+      log('Error getting cover image URL: $e');
+      return null;
+    }
+    return null;
+  }
+
+  deleteProject({String? uid}) async {
+    final batch = FirebaseFirestore.instance.batch();
+
+    final projectDocRef =
+        userCollection.doc(currentUser?.uid).collection('projects').doc(uid);
+
+    // Query for tasks and delete them
+    final tasksQuerySnapshot = await projectDocRef.collection('task').get();
+    for (final taskDocSnapshot in tasksQuerySnapshot.docs) {
+      batch.delete(taskDocSnapshot.reference);
+    }
+
+    // Delete project document
+    batch.delete(projectDocRef);
+
+    // Delete project cover from Firebase Storage if it exist
+    final storageRef =
+        firebaseStorageRef.child('${currentUser?.uid}/projectCover/$uid.jpg');
+    try {
+      await storageRef.getDownloadURL();
+      await storageRef.delete();
+    } catch (e) {
+      log(e.toString());
+    }
+
+    // Commit the batch
+    try {
+      await batch.commit();
+      Get.offNamedUntil(homeNavigationController, (route) => route.isCurrent);
+    } on FirebaseFirestore catch (e) {
+      log('Error deleting project and tasks: $e');
+    }
+  }
+
+// <<<<<<<<<<<<<<<<<<<<<< Create A Task >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  Future storeTask(
+      {required TodayTaskModel taskModel, required String projectID}) async {
+    final uid = Timestamp.now().seconds.toString();
+    final map = {
+      'title': taskModel.title,
+      'uid': uid,
+      'done': false,
+    };
+    Get.back();
+    try {
+      await userCollection
+          .doc(currentUser?.uid)
+          .collection('projects')
+          .doc(projectID)
+          .collection('task')
+          .doc(uid)
+          .set(map)
+          .then((value) {
+        taskUID = uid;
+        update();
+      });
+      refresh();
+    } on FirebaseFirestore catch (e) {
+      log('Hlo This is Error From StoreData $e');
+    }
+  }
+
+  getTaskData(String? projectID) async {
+    taskList.clear();
+    await userCollection
+        .doc(currentUser?.uid)
+        .collection('projects')
+        .doc(projectID)
+        .collection('task')
+        .doc()
+        .get()
+        .then((tasks) {
+      taskList.add(tasks.data());
+    });
   }
 }

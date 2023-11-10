@@ -37,10 +37,10 @@ Widget topSection({required SignUpController controller}) {
           },
           controller: controller.signUpPasswordController,
           isPass: true,
-          obsecure: controller.hidePassword.value,
+          obsecure: controller.hidePassword,
           suffixIcon: GestureDetector(
             onTap: controller.showPassword,
-            child: controller.hidePassword.value
+            child: controller.hidePassword
                 ? const Icon(Icons.visibility_off, color: Colors.grey, size: 20)
                 : const Icon(Icons.visibility, color: Colors.grey, size: 20),
           )),

@@ -12,6 +12,7 @@ class FillProfileController extends SignUpController {
   //<<<<<<<<<<<< Controller >>>>>>>>>>>>>>>>
   late final TextEditingController fullNameController;
   late final TextEditingController userNameController;
+  late final TextEditingController fillYourEmailAddress;
   late final TextEditingController phoneController;
   late final TextEditingController roleController;
 
@@ -26,6 +27,7 @@ class FillProfileController extends SignUpController {
   void onInit() {
     fullNameController = TextEditingController();
     phoneController = TextEditingController();
+    fillYourEmailAddress = TextEditingController();
     userNameController = TextEditingController();
     roleController = TextEditingController();
     super.onInit();
@@ -35,6 +37,7 @@ class FillProfileController extends SignUpController {
   void dispose() {
     fullNameController.dispose();
     phoneController.dispose();
+    fillYourEmailAddress.dispose();
     userNameController.dispose();
     roleController.dispose();
     super.dispose();
@@ -56,6 +59,7 @@ class FillProfileController extends SignUpController {
         userNameController.text.isNotEmpty &&
         dateOfBirth.isNotEmpty &&
         phoneController.text.isNotEmpty &&
+        fillYourEmailAddress.text.isNotEmpty &&
         roleController.text.isNotEmpty) {
       isEnabled.value = true;
     } else {

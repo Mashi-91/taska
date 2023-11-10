@@ -30,12 +30,22 @@ dependencies:
   carousel_slider:
   animated_bottom_navigation_bar:
   stylish_bottom_bar:
+  loading_animation_widget: ^1.2.0+4
+  percent_indicator:
 
   firebase_core:
   firebase_auth:
   cloud_firestore:
+  firebase_storage:
+  multiple_stream_builder:
+  connectivity:
+  cached_network_image:
 
   get:
+  uuid:
+  uri:
+  path:
+  path_provider:
 
 
 

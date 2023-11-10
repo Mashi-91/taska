@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:taska/constant/color.dart';
 import 'package:taska/screen/auth/sign_up/controller.dart';
 import 'package:taska/screen/auth/sign_up/sign_up_widget.dart';
@@ -18,8 +19,8 @@ class SignUpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: customAppbar(isGoBack: true),
-      body: Obx(
-        () => Padding(
+      body: GetBuilder<SignUpController>(
+        builder: (controller) => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14.0).copyWith(
             top: Get.height * 0.07,
           ),
@@ -33,11 +34,12 @@ class SignUpScreen extends StatelessWidget {
                 SizedBox(height: Get.height * 0.03),
                 CustomButton(
                   buttonText: 'Sign up',
-                  isEnable: controller.isSignUpButtonEnable.value,
-                  func: () {
-                    controller.createEmailAndPassword(
-                        controller.signUpEmailController.text.trim(),
-                        controller.signUpPasswordController.text.trim());
+                  isEnable: controller.isSignUpButtonEnable,
+                  func: () async {
+                    controller.createEmailAndPassword(context,
+                        email: controller.signUpEmailController.text.trim(),
+                        password:
+                            controller.signUpPasswordController.text.trim());
                   },
                 ),
                 SizedBox(height: Get.height * 0.08),

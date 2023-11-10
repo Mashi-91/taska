@@ -1,20 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+
 class TodayTaskModel {
-  final String? id;
-  final String title;
-  final String currentTime;
-  final Function onTap;
+  late String? id;
+  late String title;
+  late bool isDone;
 
   TodayTaskModel({
     this.id,
     required this.title,
-    required this.currentTime,
-    required this.onTap,
+    required this.isDone,
   });
 
-  toJson() => {
-        'id': id,
-        'title': title,
-        'currentTime': currentTime,
-        'onTap': onTap,
-      };
+  TodayTaskModel.fromDocumentSnapshot(
+      DocumentSnapshot<Map<String, dynamic>> documentSnapshot) {
+    id = documentSnapshot.data()?['uid'];
+    title = documentSnapshot.data()?['title'];
+    isDone = documentSnapshot.data()?['done'];
+  }
 }

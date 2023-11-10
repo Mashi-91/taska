@@ -64,16 +64,14 @@ Widget textFieldSection(
   return Column(
     children: [
       textFieldForFillYourProfile(
-        hintText: 'Full Name',
-        controller: controller.fullNameController,
-        onChanged: (val)=>controller.isButtonEnabled()
-      ),
+          hintText: 'Full Name',
+          controller: controller.fullNameController,
+          onChanged: (val) => controller.isButtonEnabled()),
       const SizedBox(height: 16),
       textFieldForFillYourProfile(
-        hintText: 'User Name',
-        controller: controller.userNameController,
-        onChanged: (val)=>controller.isButtonEnabled()
-      ),
+          hintText: 'User Name',
+          controller: controller.userNameController,
+          onChanged: (val) => controller.isButtonEnabled()),
       const SizedBox(height: 16),
       GestureDetector(
         onTap: () async {
@@ -119,7 +117,12 @@ Widget textFieldSection(
           ),
         ),
       ),
-
+      const SizedBox(height: 16),
+      textFieldForFillYourProfile(
+        hintText: 'Email',
+        onChanged: (val) =>controller.isButtonEnabled(),
+        controller: controller.fillYourEmailAddress,
+      ),
       const SizedBox(height: 16),
     ],
   );
@@ -132,14 +135,14 @@ Widget textFieldForFillYourProfile({
   bool obsecure = false,
   int? maxLength,
   Widget? suffix,
-  Function(String)? onChanged,
+  required Function(String) onChanged,
   Widget? prefix,
   required TextEditingController controller,
 }) {
   return TextFormField(
     controller: controller,
     obscureText: obsecure,
-    onChanged: (val)=>onChanged!(val),
+    onChanged: (val) => onChanged(val),
     maxLength: maxLength,
     keyboardType: keyboardType,
     decoration: InputDecoration(

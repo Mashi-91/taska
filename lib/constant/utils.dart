@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
+import '../screen/navigation_tabs/project/project_Detail.dart';
 import 'color.dart';
 
 //<<<<<<<<<<<<<<<<<< Get DateTime >>>>>>>>>>>>>>>>>>>
@@ -15,10 +17,115 @@ DateFormat getCurrentTime() {
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< IconButton >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-InkWell iconButton({required Widget icon, required Function onTap}) {
-  return InkWell(
-    onTap: () => onTap(),
-    child: icon,
+Padding iconButton(
+    {required Widget icon, required Function onTap, EdgeInsets? margin}) {
+  return Padding(
+    padding: margin ?? EdgeInsets.zero,
+    child: InkWell(
+      onTap: () => onTap(),
+      child: icon,
+    ),
+  );
+}
+
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< LoadingIndicator >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+customLoadingIndicator(BuildContext context,
+    {Color color = primaryColor, double size = 50, isShowDialog = false}) {
+  showDialog(
+    context: context,
+    builder: (context) => Center(
+        child: LoadingAnimationWidget.stretchedDots(color: color, size: size)),
+  );
+}
+
+customLoadingIndicator2({Color color = primaryColor, double size = 50}) {
+  Center(child: LoadingAnimationWidget.stretchedDots(color: color, size: size));
+}
+
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< PopMenuItem >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+enum ProjectDetailOptions {
+  ChangeCover,
+  ChangeLogo,
+  ChangeColor,
+  EditProject,
+  DeleteProject,
+}
+
+enum ProjectTitleOptions {
+  AddCover,
+  AddLogo,
+  AddColor,
+  EditProject,
+  DeleteProject,
+}
+
+PopupMenuItem buildPopMenuItem({
+  required String title,
+  required dynamic value,
+  required dynamic iconData,
+  Color? color,
+  bool isDivider = true,
+  bool isSvgIcon = false,
+}) {
+  return PopupMenuItem(
+    value: value,
+    padding: EdgeInsets.zero,
+    height: 0,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2)
+              .copyWith(bottom: !isDivider ? 8 : 0),
+          child: Row(
+            children: [
+              const SizedBox(width: 8),
+              isSvgIcon
+                  ? SvgToIcon(
+                      iconName: iconData,
+                      height: 16,
+                      padding: const EdgeInsets.only(left: 2),
+                    )
+                  : Icon(
+                      iconData,
+                      color: color,
+                    ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(fontSize: 14, color: color),
+              ),
+            ],
+          ),
+        ),
+        isDivider
+            ? const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14.0),
+                child: Divider(),
+              )
+            : Container(),
+      ],
+    ),
+  );
+}
+
+//<<<<<<<<<<<<<<<<< PopMenuButton >>>>>>>>>>>>>>>>>>>>>
+
+PopupMenuButton buildPopMenuButton(BuildContext context,
+    {required List<PopupMenuItem> popMenuItem,
+    Color? color,
+    required Function(dynamic) onSelected}) {
+  return PopupMenuButton(
+    icon: Icon(Icons.pending_outlined, color: color ?? primaryColor),
+    padding: const EdgeInsets.only(right: 12),
+    onSelected: (val) => onSelected(val),
+    position: PopupMenuPosition.under,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12).copyWith(topRight: Radius.zero),
+    ),
+    itemBuilder: (context) => popMenuItem,
   );
 }
 
@@ -27,21 +134,22 @@ InkWell iconButton({required Widget icon, required Function onTap}) {
 AppBar customAppbar(
     {String title = "",
     isGoBack = false,
+    Function?  backButton,
     Color? backgroundColor,
-    color = Colors.black,
+    Color? color = Colors.black,
     List<Widget>? actions}) {
   return AppBar(
     elevation: 0,
     backgroundColor: backgroundColor,
-    leading: InkWell(
-      onTap: isGoBack ? () => Get.back() : null,
-      child: isGoBack
-          ? Icon(
+    leading: isGoBack
+        ? InkWell(
+            onTap: () => Get.back(),
+            child: Icon(
               Icons.arrow_back,
               color: color,
-            )
-          : null,
-    ),
+            ),
+          )
+        : null,
     titleTextStyle: const TextStyle(
         fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
     title: Text(title),
@@ -77,8 +185,19 @@ class CustomButton extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              isEnable
+                  ? BoxShadow(
+                      offset: const Offset(0, 2),
+                      spreadRadius: 0.1,
+                      blurRadius: 12,
+                      color: isSkip
+                          ? Colors.transparent
+                          : Colors.blueAccent.withOpacity(0.7))
+                  : const BoxShadow(color: transparent)
+            ],
             color: isSkip
-                ? Colors.blue.withOpacity(0.1)
+                ? transparent
                 : isEnable
                     ? primaryColor
                     : disabledButtonColor),
@@ -103,12 +222,16 @@ class CustomOutlineButton extends StatelessWidget {
       this.width = 324,
       this.height = 50,
       this.isEnable = false,
-      required this.func});
+      this.addIcon = true,
+      required this.func,
+      this.borderWidth});
 
   final String buttonText;
   final bool isEnable;
+  final bool addIcon;
   final double width;
   final double height;
+  final double? borderWidth;
   final VoidCallback func;
 
   @override
@@ -121,11 +244,13 @@ class CustomOutlineButton extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: primaryColor, width: 3)),
+            border: Border.all(color: primaryColor, width: borderWidth ?? 3)),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(FluentIcons.add_square_16_regular),
+            addIcon
+                ? const Icon(FluentIcons.add_square_16_regular)
+                : Container(),
             const SizedBox(width: 8),
             Text(
               buttonText,
@@ -199,37 +324,58 @@ class customTextField extends StatelessWidget {
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 class SvgToIcon extends StatelessWidget {
-  const SvgToIcon({super.key, required this.icon, this.color});
+  SvgToIcon(
+      {super.key,
+      required this.iconName,
+      this.color,
+      this.padding,
+      this.height});
 
-  final String icon;
+  final String iconName;
+  EdgeInsets? padding;
   final Color? color;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
-      "assets/icons/$icon.svg",
-      color: color,
-      height: 20,
+    return Padding(
+      padding: padding ?? EdgeInsets.zero,
+      child: SvgPicture.asset(
+        "assets/icons/$iconName.svg",
+        color: color,
+        height: height ?? 20,
+      ),
     );
   }
 }
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-class taskButton extends StatelessWidget {
-  const taskButton({super.key, required this.onTap});
+class CustomFloatingButton extends StatelessWidget {
+  const CustomFloatingButton(
+      {super.key,
+      required this.onTap,
+      this.height,
+      this.width,
+      this.bottom,
+      this.right});
 
   final Function onTap;
+  final double? height;
+  final double? width;
+  final double? bottom;
+  final double? right;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => onTap(),
       child: Container(
-        height: 44,
-        width: 44,
+        height: height ?? 44,
+        width: width ?? 44,
         alignment: Alignment.center,
-        margin: const EdgeInsets.only(top: 58),
+        margin:
+            EdgeInsets.only(top: 58, bottom: bottom ?? 0, right: right ?? 0),
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: primaryColor,
@@ -247,12 +393,11 @@ class taskButton extends StatelessWidget {
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 class CustomDivider extends StatelessWidget {
-  const CustomDivider(
-      {super.key, this.height = 4, this.width = 46, this.color = Colors.grey});
+  CustomDivider({super.key, this.height = 4, this.width = 46, this.color});
 
   final double height;
   final double width;
-  final Color color;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -260,8 +405,47 @@ class CustomDivider extends StatelessWidget {
       height: height,
       width: width,
       decoration: BoxDecoration(
-        color: color,
+        color: color ?? Colors.grey.withOpacity(0.7),
         borderRadius: BorderRadius.circular(14),
+      ),
+    );
+  }
+}
+
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+class CustomDateTimePicker extends StatelessWidget {
+  const CustomDateTimePicker(
+      {super.key,
+      this.color,
+      this.startDate,
+      this.currentDate,
+      this.lastDate,
+      required this.onDateChanged,
+      this.setDate});
+
+  final Color? color;
+  final DateTime? startDate;
+  final DateTime? currentDate;
+  final DateTime? lastDate;
+  final DateTime? setDate;
+  final Function(DateTime) onDateChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 250,
+      decoration: BoxDecoration(
+        color: color ?? Colors.blue.shade50.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: CalendarDatePicker(
+        initialDate: startDate ?? DateTime.now(),
+        firstDate: currentDate ?? DateTime.now(),
+        lastDate: lastDate ?? DateTime(2100),
+        onDateChanged: (val) => onDateChanged(val),
+        initialCalendarMode: DatePickerMode.day,
+        currentDate: setDate,
       ),
     );
   }
