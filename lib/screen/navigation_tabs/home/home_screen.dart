@@ -72,7 +72,7 @@ class HomeScreen extends StatelessWidget {
             SizedBox(
               height: 280,
               child: StreamBuilder(
-                  stream: controller.projectSnapshot,
+                  stream: controller.getAllProjects(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
@@ -84,11 +84,12 @@ class HomeScreen extends StatelessWidget {
                       return CarouselSlider.builder(
                         itemCount: project?.take(2).length,
                         itemBuilder: (_, i, val) {
-                          return project!.isNotEmpty
-                              ? projectCardWithImg(
-                                  backGroundImg: project[i]['cover'] ??
-                                      Uri.https(
-                                          'https://armysportsinstitute.com/wp-content/themes/armysports/images/noimg.png'),
+                          return project == null || project.isEmpty
+                              ? SvgPicture.asset('assets/images/Empty-img.svg')
+                              : projectCardWithImg(
+                                  backGroundImg: project[i]['cover'] != ''
+                                      ? project[i]['cover']
+                                      : 'https://armysportsinstitute.com/wp-content/themes/armysports/images/noimg.png',
                                   title: project[i]['title'] ?? '',
                                   subTitle: 'subTitle',
                                   onTapOption: () {
@@ -99,8 +100,7 @@ class HomeScreen extends StatelessWidget {
                                   totalTask: '',
                                   dateLeft: '',
                                   timeLeft: '',
-                                )
-                              : SvgPicture.asset('assets/images/Empty-img.svg');
+                                );
                         },
                         options: CarouselOptions(
                           height: 320,

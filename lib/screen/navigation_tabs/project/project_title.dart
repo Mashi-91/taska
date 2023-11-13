@@ -36,7 +36,7 @@ class ProjectTitle extends StatelessWidget {
           const SizedBox(width: 20),
           buildPopMenuButton(context, onSelected: (val) {
             if (val == ProjectTitleOptions.DeleteProject) {
-              controller.deleteProject(uid: data['uid']);
+              controller.deleteProject(uid: data['id']);
             }
             if (val == ProjectTitleOptions.AddCover) {
               customBottomSheet(controller, context,
@@ -95,17 +95,14 @@ class ProjectTitle extends StatelessWidget {
         ],
       ),
       extendBodyBehindAppBar: true,
-      body: StreamBuilder2(
-        streams: StreamTuple2(
-            controller.userCollection
-                .doc(controller.currentUser?.uid)
-                .collection('projects')
-                .doc(data['uid'])
-                .snapshots(),
-            controller.getTaskSnapshot(data)),
+      body: StreamBuilder(
+        stream: controller.userCollection
+            .doc(controller.currentUser?.uid)
+            .collection('Projects')
+            .doc(data['id'])
+            .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.snapshot1.connectionState == ConnectionState.waiting ||
-              snapshot.snapshot2.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             // Show loading indicator when waiting for data
             return Scaffold(
               body: Center(
@@ -113,101 +110,23 @@ class ProjectTitle extends StatelessWidget {
                     color: primaryColor, size: 50),
               ),
             );
-          } else if (snapshot.snapshot1.hasData) {
-            final project = snapshot.snapshot1.data?.data();
-            final task = snapshot.snapshot2.data?.docs;
+          } else if (snapshot.hasData) {
+            final project = snapshot.data?.data();
+            // final task = snapshot.snapshot2.data?.docs;
+            log(project.toString());
             return Column(
               children: [
-                GetBuilder<HomeController>(
-                  builder: (context) => Flexible(
-                    child: controller.photo != null
-                        ? Container(
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: FileImage(controller.photo as File),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          )
-                        : Container(
-                            color: lightGrey_2,
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                Positioned(
-                                  bottom: 20,
-                                  left: 22,
-                                  child: iconButton(
-                                    onTap: () {},
-                                    icon: const CircleAvatar(
-                                      backgroundColor: Colors.white,
-                                      child: Icon(
-                                        FluentIcons.edit_16_filled,
-                                        size: 22,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                  ),
-                ),
+                buildProjectImageSection(),
                 Flexible(
                   flex: 3,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18)
-                        .copyWith(top: 14),
-                    alignment: Alignment.topLeft,
-                    color: Colors.white,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${project?['title']}',
-                          style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.8),
-                        ),
-                        const Text(
-                          'Add Description',
-                          style: TextStyle(fontSize: 12, color: lightBlack),
-                        ),
-                        const SizedBox(height: 12),
-                        CustomOutlineButton(
-                          width: double.infinity,
-                          addIcon: false,
-                          buttonText: 'Set Deadline Project',
-                          func: () {},
-                        ),
-                        task!.isNotEmpty
-                            ? Expanded(
-                                child: ListView.builder(
-                                  padding: const EdgeInsets.only(top: 20),
-                                  itemCount: task.length,
-                                  itemBuilder: (context, i) {
-                                    return taskTitleTile(
-                                        title: task[i].data()['title']);
-                                  },
-                                ),
-                              )
-                            : SvgPicture.asset(
-                                'assets/images/Empty-img.svg',
-                                height: 400,
-                                alignment: Alignment.bottomCenter,
-                              )
-                      ],
-                    ),
-                  ),
+                  child: buildProjectDetailSection(project),
                 ),
               ],
             );
           } else {
             return Scaffold(
               body: Center(
-                child: Text(
-                    'Error Project: ${snapshot.snapshot1.error} Error Task ${snapshot.snapshot2.error}'),
+                child: Text('Error Project: ${snapshot.error}'),
               ),
             );
           }
@@ -251,6 +170,91 @@ class ProjectTitle extends StatelessWidget {
         right: 18,
         width: 60,
         height: 60,
+      ),
+    );
+  }
+
+  Widget buildProjectImageSection() {
+    final controller = Get.find<HomeController>();
+
+    return GetBuilder<HomeController>(
+      builder: (context) => Flexible(
+        child: controller.photo != null
+            ? Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: FileImage(controller.photo as File),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              )
+            : Container(
+                color: lightGrey_2,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Positioned(
+                      bottom: 20,
+                      left: 22,
+                      child: iconButton(
+                        onTap: () {},
+                        icon: const CircleAvatar(
+                          backgroundColor: Colors.white,
+                          child: Icon(
+                            FluentIcons.edit_16_filled,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget buildProjectDetailSection(project) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18).copyWith(top: 14),
+      alignment: Alignment.topLeft,
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${project?['title']}',
+            style: const TextStyle(
+                fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+          ),
+          const Text(
+            'Add Description',
+            style: TextStyle(fontSize: 12, color: lightBlack),
+          ),
+          const SizedBox(height: 12),
+          CustomOutlineButton(
+            width: double.infinity,
+            addIcon: false,
+            buttonText: 'Set Deadline Project',
+            func: () {},
+          ),
+          // task!.isNotEmpty
+          //     ? Expanded(
+          //         child: ListView.builder(
+          //           padding: const EdgeInsets.only(top: 20),
+          //           itemCount: task.length,
+          //           itemBuilder: (context, i) {
+          //             return taskTitleTile(
+          //                 title: task[i].data()['title']);
+          //           },
+          //         ),
+          //       )
+          //     : SvgPicture.asset(
+          //         'assets/images/Empty-img.svg',
+          //         height: 400,
+          //         alignment: Alignment.bottomCenter,
+          //       )
+        ],
       ),
     );
   }

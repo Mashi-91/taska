@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 import '../../../constant/color.dart';
@@ -117,69 +118,77 @@ Widget projectCardWithImg({
   required String dateLeft,
   EdgeInsets? margin,
 }) {
+  final size = Get.height;
   return Container(
     margin:
-        margin ?? const EdgeInsets.symmetric(horizontal: 4).copyWith(bottom: 6),
+        margin ?? const EdgeInsets.symmetric(horizontal: 4).copyWith(bottom: 0),
     decoration:
-        BoxDecoration(borderRadius: BorderRadius.circular(16), boxShadow: [
+        BoxDecoration(borderRadius: BorderRadius.circular(20), boxShadow: [
       BoxShadow(
           offset: const Offset(0, 2),
           color: Colors.grey.withOpacity(0.1),
-          spreadRadius: 2,
-          blurRadius: 4)
+          // color: Colors.red,
+          spreadRadius: 1,
+          blurRadius: 20)
     ]),
     width: double.infinity,
-    height: 300,
+    height: size * 0.34,
     child: Column(
       children: [
         Container(
-          height: 115,
+          height: size * 0.14,
           decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16), topRight: Radius.circular(16)),
-              image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: CachedNetworkImageProvider(backGroundImg))),
+            borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: CachedNetworkImageProvider(
+                  Uri.parse(backGroundImg).toString()),
+            ),
+          ),
         ),
-        Material(
-          child: Container(
-            decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(16))),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20).copyWith(bottom: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Expanded(
+          child: Material(
+            child: SingleChildScrollView(
+              child: Container(
+                decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                        bottomRight: Radius.circular(20),
+                        bottomLeft: Radius.circular(20))),
+                padding: const EdgeInsets.symmetric(horizontal: 20)
+                    .copyWith(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.w600),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w600),
+                        ),
+                        IconButton(
+                            onPressed: () => onTapOption(),
+                            icon: const Icon(Icons.pending_outlined,
+                                color: lightGrey))
+                      ],
                     ),
-                    IconButton(
-                        onPressed: () => onTapOption(),
-                        icon: const Icon(Icons.pending_outlined,
-                            color: lightGrey))
+                    Text(
+                      subTitle,
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.normal),
+                    ),
+                    SizedBox(height: size * 0.02),
+                    buildProgressSection(
+                      totalTask: totalTask,
+                      leftTask: leftTask,
+                      timeLeft: timeLeft,
+                      dateLeft: dateLeft,
+                    )
                   ],
                 ),
-                Text(
-                  subTitle,
-                  style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.normal),
-                ),
-                const SizedBox(height: 20),
-                buildProgressSection(
-                  totalTask: totalTask,
-                  leftTask: leftTask,
-                  timeLeft: timeLeft,
-                  dateLeft: dateLeft,
-                )
-              ],
+              ),
             ),
           ),
         ),

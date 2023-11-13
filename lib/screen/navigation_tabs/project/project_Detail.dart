@@ -20,23 +20,31 @@ class ProjectDetail extends StatelessWidget {
   ProjectDetail({super.key});
   @override
   Widget build(BuildContext context) {
-    final data = Get.arguments;
+    final data = Get.arguments ?? '';
     final controller = Get.put(HomeController());
+    // log(data.toString());
     return Scaffold(
       appBar: customAppbar(
         backgroundColor: Colors.transparent,
         isGoBack: true,
-        color: Colors.white,
+        color: data['cover'] != '' || data['cover'] != null
+            ? Colors.black
+            : Colors.white,
         actions: [
           iconButton(
             onTap: () {},
-            icon: const Icon(
+            icon: Icon(
               Icons.search_outlined,
-              color: Colors.white,
+              color: data['cover'] != '' || data['cover'] != null
+                  ? Colors.black
+                  : Colors.white,
             ),
           ),
           const SizedBox(width: 20),
-          buildPopMenuButton(context, color: Colors.white, onSelected: (val) {
+          buildPopMenuButton(context,
+              color: data['cover'] != '' || data['cover'] != null
+                  ? Colors.black
+                  : Colors.white, onSelected: (val) {
             if (val == ProjectDetailOptions.DeleteProject) {
               customBottomSheet(
                 controller,
@@ -61,7 +69,7 @@ class ProjectDetail extends StatelessWidget {
                     CustomButton(
                         buttonText: 'Yes, Delete',
                         func: () async {
-                          await controller.deleteProject(uid: data['uid']);
+                          await controller.deleteProject(uid: data['id']);
                         },
                         isEnable: true,
                         width: double.infinity),
@@ -101,13 +109,14 @@ class ProjectDetail extends StatelessWidget {
                       ),
                     ],
                   ));
-            }
+            } else if (val == ProjectDetailOptions.EditProject) {}
           }, popMenuItem: [
             buildPopMenuItem(
               title: 'Change Cover',
               value: ProjectDetailOptions.ChangeCover,
               iconData: FluentIcons.image_16_regular,
             ),
+            /*
             buildPopMenuItem(
               title: 'Change Logo',
               value: ProjectDetailOptions.ChangeLogo,
@@ -118,7 +127,7 @@ class ProjectDetail extends StatelessWidget {
               title: 'Change Color',
               value: ProjectDetailOptions.ChangeColor,
               iconData: Icons.remove_red_eye_outlined,
-            ),
+            ),*/
             buildPopMenuItem(
               title: 'Edit Project',
               value: ProjectDetailOptions.EditProject,
@@ -142,8 +151,11 @@ class ProjectDetail extends StatelessWidget {
                 tag: controller.isCover.value ? '' : data['title'],
                 child: Material(
                     child: FutureBuilder(
-                  future: controller.getCoverImageUrl(data['uid']),
+                  future: data['cover'] != ''
+                      ? controller.getCoverImageUrl(data['id'])
+                      : Future.delayed(const Duration(milliseconds: 100)),
                   builder: (context, snapshot) {
+                    // log(snapshot.data.toString());
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
                         child: LoadingAnimationWidget.stretchedDots(
@@ -154,7 +166,8 @@ class ProjectDetail extends StatelessWidget {
                       return Container(
                         decoration: BoxDecoration(
                           image: DecorationImage(
-                            image: CachedNetworkImageProvider(snapshot.data!,),
+                            image: CachedNetworkImageProvider(snapshot.data ??
+                                'https://armysportsinstitute.com/wp-content/themes/armysports/images/noimg.png'),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -195,7 +208,7 @@ class ProjectDetail extends StatelessWidget {
                   alignment: Alignment.topLeft,
                   color: Colors.white,
                   child: FutureBuilder(
-                      future: controller.getTask(data['uid']),
+                      future: controller.getTask(data['id']),
                       builder: (context, snapshot) {
                         final task = snapshot.data?.docs ?? [];
                         if (snapshot.connectionState ==
@@ -205,59 +218,62 @@ class ProjectDetail extends StatelessWidget {
                                 color: primaryColor, size: 40),
                           );
                         }
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${data['title']}',
-                              style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.8),
-                            ),
-                            const Text(
-                              'Add Description',
-                              style: TextStyle(fontSize: 12, color: lightBlack),
-                            ),
-                            const SizedBox(height: 26),
-                            /*CustomOutlineButton(
-                          width: double.infinity,
-                          addIcon: false,
-                          isEnable: true,
-                          borderWidth: 2,
-                          buttonText: 'Set Deadline Project',
-                          func: () {
-                            customBottomSheet(controller, context,
-                                title: 'Set Deadline Project',
-                                content: CustomDateTimePicker(onDateChanged: (val){
-                                  log(val.toString());
-                                }));
-                          },
-                        ),*/
-                            buildProgressSection(
-                                leftTask: '1',
-                                totalTask: task.length.toString(),
-                                dateLeft: '13',
-                                timeLeft: 'Dec 23 2024'),
-                            const SizedBox(height: 12),
-                            task.isNotEmpty
-                                ? Expanded(
-                                    child: ListView.builder(
-                                      padding: const EdgeInsets.only(top: 20),
-                                      itemCount: task.length,
-                                      itemBuilder: (context, i) {
-                                        return taskTitleTile(
-                                            title:
-                                                task[i].data()['title'] ?? '');
-                                      },
-                                    ),
-                                  )
-                                : SvgPicture.asset(
-                                    'assets/images/Empty-img.svg',
-                                    height: 400,
-                                    alignment: Alignment.bottomCenter,
-                                  )
-                          ],
+                        return SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${data['title']}',
+                                style: const TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.8),
+                              ),
+                              const Text(
+                                'Add Description',
+                                style:
+                                    TextStyle(fontSize: 12, color: lightBlack),
+                              ),
+                              const SizedBox(height: 26),
+                              /*CustomOutlineButton(
+                            width: double.infinity,
+                            addIcon: false,
+                            isEnable: true,
+                            borderWidth: 2,
+                            buttonText: 'Set Deadline Project',
+                            func: () {
+                              customBottomSheet(controller, context,
+                                  title: 'Set Deadline Project',
+                                  content: CustomDateTimePicker(onDateChanged: (val){
+                                    log(val.toString());
+                                  }));
+                            },
+                          ),*/
+                              buildProgressSection(
+                                  leftTask: '1',
+                                  totalTask: task.length.toString(),
+                                  dateLeft: '13',
+                                  timeLeft: 'Dec 23 2024'),
+                              const SizedBox(height: 12),
+                              task.isNotEmpty
+                                  ? Expanded(
+                                      child: ListView.builder(
+                                        padding: const EdgeInsets.only(top: 20),
+                                        itemCount: task.length,
+                                        itemBuilder: (context, i) {
+                                          return taskTitleTile(
+                                              title: task[i].data()['title'] ??
+                                                  '');
+                                        },
+                                      ),
+                                    )
+                                  : SvgPicture.asset(
+                                      'assets/images/Empty-img.svg',
+                                      height: 400,
+                                      alignment: Alignment.bottomCenter,
+                                    )
+                            ],
+                          ),
                         );
                       })),
             ),

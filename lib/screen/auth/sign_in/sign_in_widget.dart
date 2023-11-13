@@ -54,7 +54,7 @@ Widget bottomSection() {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 120,
+            width: Get.width * 0.28,
             height: 1,
             color: Colors.grey.withOpacity(0.4),
           ),
@@ -69,7 +69,7 @@ Widget bottomSection() {
             ),
           ),
           Container(
-            width: 120,
+            width: Get.width * 0.28,
             height: 1,
             color: Colors.grey.withOpacity(0.4),
           ),

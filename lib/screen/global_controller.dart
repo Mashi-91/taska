@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:taska/constant/routes.dart';
+import 'package:taska/model/project_model.dart';
 import 'package:taska/model/today_task_model.dart';
 import '../constant/snackBar.dart';
 import '../constant/utils.dart';
@@ -31,17 +32,10 @@ class GlobalController extends GetxController {
   var taskList = [];
   var taskUID = '';
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> get projectSnapshot =>
-      userCollection
-          .doc(currentUser?.uid)
-          .collection('projects')
-          .orderBy('uid', descending: true)
-          .snapshots();
-
   Stream<QuerySnapshot<Map<String, dynamic>>> getTaskSnapshot(dynamic data) =>
       userCollection
           .doc(currentUser?.uid)
-          .collection('projects')
+          .collection('Projects')
           .doc(data?['uid'])
           .collection('task')
           .snapshots();
@@ -49,7 +43,7 @@ class GlobalController extends GetxController {
   Future<QuerySnapshot<Map<String, dynamic>>> getTask(dynamic data) =>
       userCollection
           .doc(currentUser?.uid)
-          .collection('projects')
+          .collection('Projects')
           .doc(data)
           .collection('task')
           .get();
@@ -263,19 +257,14 @@ class GlobalController extends GetxController {
   ];
 
 // <<<<<<<<<<<<<<<<<<<<<< Create A Project >>>>>>>>>>>>>>>>>>>>>>>>>>>
-  Future storeProject({String? title}) async {
+  Future storeProject({required String title}) async {
     final uid = Timestamp.now().seconds.toString();
-    final map = {
-      'title': title,
-      'uid': uid,
-      'cover': '',
-      'done': false,
-    };
+    final map = ProjectModel(id: uid, title: title, cover: '').toJson();
     Get.back();
     try {
       await userCollection
           .doc(currentUser?.uid)
-          .collection('projects')
+          .collection('Projects')
           .doc(uid)
           .set(map)
           .then((value) async {
@@ -288,6 +277,7 @@ class GlobalController extends GetxController {
     }
   }
 
+  // <<<<<<<<<<<<<<<<<<<<<< Upload Image >>>>>>>>>>>>>>>>>>>>>>>>>>>
   uploadImg({File? cover}) async {
     try {
       final path = cover!.path
@@ -306,14 +296,14 @@ class GlobalController extends GetxController {
 
   updateProject({File? cover}) async {
     try {
+      await uploadImg(cover: cover);
       await userCollection
           .doc(currentUser?.uid)
-          .collection('projects')
+          .collection('Projects')
           .doc(currentProjectUID)
-          .set({
-        'cover': imgUrl ,
+          .update({
+        'cover': imgUrl,
       });
-      await uploadImg(cover: cover);
     } on FirebaseFirestore catch (e) {
       log('Showing Error uploadProjectSection: $e');
     }
@@ -323,7 +313,7 @@ class GlobalController extends GetxController {
     try {
       await userCollection
           .doc(currentUser!.uid)
-          .collection('projects')
+          .collection('Projects')
           .doc(uid)
           .set({
         'taskUID': taskUID,
@@ -338,25 +328,30 @@ class GlobalController extends GetxController {
     try {
       final ref =
           FirebaseStorage.instance.ref().child('projectCover/$projectId.jpg');
-      try {
+
+      // Check if the object exists by trying to get its data
+      final data = await ref.getData();
+      log(ref.toString());
+
+      if (data != null) {
+        // If data is not null, the object exists
         final url = await ref.getDownloadURL();
         return url;
-      } catch (e) {
-        log('Showing Error DownloadCoverImageUrlSection: $e');
+      } else {
+        log('Object does not exist at location.');
+        return 'https://armysportsinstitute.com/wp-content/themes/armysports/images/noimg.png';
       }
-      // Adjust path as needed
     } catch (e) {
       log('Error getting cover image URL: $e');
       return null;
     }
-    return null;
   }
 
   deleteProject({String? uid}) async {
     final batch = FirebaseFirestore.instance.batch();
 
     final projectDocRef =
-        userCollection.doc(currentUser?.uid).collection('projects').doc(uid);
+        userCollection.doc(currentUser?.uid).collection('Projects').doc(uid);
 
     // Query for tasks and delete them
     final tasksQuerySnapshot = await projectDocRef.collection('task').get();
@@ -386,6 +381,22 @@ class GlobalController extends GetxController {
     }
   }
 
+// <<<<<<<<<<<<<<<<<<<<<< Get All Project >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  Stream? getAllProjects() {
+    try {
+      final user = userCollection
+          .doc(currentUser?.uid)
+          .collection('Projects')
+          // .orderBy('uid', descending: true)
+          .snapshots();
+      return user;
+    } on FirebaseFirestore catch (e) {
+      log('While getting all projects: $e');
+    }
+    return null;
+  }
+
 // <<<<<<<<<<<<<<<<<<<<<< Create A Task >>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   Future storeTask(
@@ -400,7 +411,7 @@ class GlobalController extends GetxController {
     try {
       await userCollection
           .doc(currentUser?.uid)
-          .collection('projects')
+          .collection('Projects')
           .doc(projectID)
           .collection('task')
           .doc(uid)
@@ -419,7 +430,7 @@ class GlobalController extends GetxController {
     taskList.clear();
     await userCollection
         .doc(currentUser?.uid)
-        .collection('projects')
+        .collection('Projects')
         .doc(projectID)
         .collection('task')
         .doc()

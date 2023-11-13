@@ -47,8 +47,6 @@ customLoadingIndicator2({Color color = primaryColor, double size = 50}) {
 
 enum ProjectDetailOptions {
   ChangeCover,
-  ChangeLogo,
-  ChangeColor,
   EditProject,
   DeleteProject,
 }
@@ -134,7 +132,7 @@ PopupMenuButton buildPopMenuButton(BuildContext context,
 AppBar customAppbar(
     {String title = "",
     isGoBack = false,
-    Function?  backButton,
+    Function? backButton,
     Color? backgroundColor,
     Color? color = Colors.black,
     List<Widget>? actions}) {

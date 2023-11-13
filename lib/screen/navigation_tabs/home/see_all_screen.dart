@@ -52,8 +52,8 @@ class SeeAll extends StatelessWidget {
                   ),
           ),
         ]),
-        body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: controller.projectSnapshot,
+        body: StreamBuilder(
+          stream: controller.getAllProjects(),
           builder: (context, snapshot) {
             final data = snapshot.data?.docs;
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -64,25 +64,37 @@ class SeeAll extends StatelessWidget {
             }
             if (snapshot.hasData) {
               return ListView.builder(
-                itemCount: data?.length,
+                itemCount: data?.length ?? 0,
                 itemBuilder: (context, i) {
-                  final title = data?[i].data()['title'] ?? '';
-                  final tag = data?[i].data()['title'];
+                  if (data == null || data.isEmpty) {
+                    return const Center(child: Text('No Data Found'));
+                  }
+
+                  final projects = data?[i].data();
+                  if (projects == null) {
+                    return const SizedBox
+                        .shrink(); // or handle the case when projects is null
+                  }
+
+                  final title = projects['title'] ?? '';
+                  final tag = projects['title'];
+
                   return controller.isCover.value
                       ? Material(
                           child: Hero(
                             tag: tag,
                             child: projectCardWithoutImg(
-                                margin: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 14),
-                                title: title,
-                                subTitle: 'subTitle',
-                                onTapOption: () => Get.toNamed(projectDetail,
-                                    arguments: data[i].data()),
-                                timeLeft: '1',
-                                totalTask: data!.length.toString(),
-                                dateLeft: '',
-                                leftTask: ''),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 14),
+                              title: title,
+                              subTitle: 'subTitle',
+                              onTapOption: () => Get.toNamed(projectDetail,
+                                  arguments: data[i].data()),
+                              timeLeft: '1',
+                              totalTask: data!.length.toString(),
+                              dateLeft: '',
+                              leftTask: '',
+                            ),
                           ),
                         )
                       : Material(
@@ -91,11 +103,14 @@ class SeeAll extends StatelessWidget {
                             child: projectCardWithImg(
                               margin: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 14),
-                              backGroundImg: "assets/images/home_1_image.jpg",
+                              backGroundImg: projects['cover'] != '' &&
+                                      projects['cover'] != null
+                                  ? projects['cover']
+                                  : 'https://armysportsinstitute.com/wp-content/themes/armysports/images/noimg.png',
                               title: title,
                               subTitle: 'subTitle',
                               onTapOption: () => Get.toNamed(projectDetail,
-                                  arguments: data?[i].data()),
+                                  arguments: data[i].data()),
                               leftTask: '1',
                               totalTask: '1',
                               dateLeft: '',
