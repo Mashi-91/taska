@@ -154,6 +154,7 @@ class ProjectTitle extends StatelessWidget {
                       taskModel: TodayTaskModel(
                         title: controller.taskNameController.text,
                         isDone: false,
+                        time: DateTime.now(),
                       ),
                     );
                     controller.addTaskUID(data['uid']);

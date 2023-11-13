@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 import '../../../constant/color.dart';
@@ -316,7 +317,20 @@ Widget taskTile({required TodayTaskModel taskModel}) {
   );
 }
 
-Widget taskTitleTile({required String title}) {
+Widget taskTitleTile({required String title, required DateTime time}) {
+  DateTime now = DateTime.now();
+  DateTime today = DateTime(now.year, now.month, now.day);
+  DateTime yesterday = today.subtract(Duration(days: 1));
+
+  String displayText;
+
+  if (time.isAfter(today)) {
+    displayText = 'Today ${DateFormat.jmz().format(time)}';
+  } else if (time.isAfter(yesterday)) {
+    displayText = 'Yesterday ${DateFormat.jmz().format(time)}';
+  } else {
+    displayText = DateFormat.yMd().add_jm().format(time);
+  }
   return Container(
     margin: const EdgeInsets.only(right: 80, bottom: 12),
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -329,17 +343,24 @@ Widget taskTitleTile({required String title}) {
               color: Colors.grey.withOpacity(0.2),
               blurRadius: 2)
         ]),
-    child: Row(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        Row(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
+            const Spacer(),
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(FluentIcons.add_square_16_regular),
+            )
+          ],
         ),
-        const Spacer(),
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(FluentIcons.add_square_16_regular),
-        )
+        const SizedBox(height: 8),
+        Text('$displayText')
       ],
     ),
   );

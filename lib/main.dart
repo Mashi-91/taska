@@ -26,15 +26,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // debugPaintSizeEnabled = true;
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Taska',
       theme: ThemeData(
           appBarTheme: const AppBarTheme(
-            elevation: 0,
-            backgroundColor: Colors.white,
-            iconTheme: IconThemeData(color: Colors.black,size: 20)
-          ),
+              elevation: 0,
+              backgroundColor: Colors.white,
+              iconTheme: IconThemeData(color: Colors.black, size: 20)),
           scaffoldBackgroundColor: Colors.white,
           iconTheme: const IconThemeData(color: primaryColor),
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

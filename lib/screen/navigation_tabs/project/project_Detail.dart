@@ -208,7 +208,7 @@ class ProjectDetail extends StatelessWidget {
                   alignment: Alignment.topLeft,
                   color: Colors.white,
                   child: FutureBuilder(
-                      future: controller.getTask(data['id']),
+                      future: controller.getAllTask(data['id']),
                       builder: (context, snapshot) {
                         final task = snapshot.data?.docs ?? [];
                         if (snapshot.connectionState ==
@@ -218,62 +218,63 @@ class ProjectDetail extends StatelessWidget {
                                 color: primaryColor, size: 40),
                           );
                         }
-                        return SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${data['title']}',
-                                style: const TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.8),
-                              ),
-                              const Text(
-                                'Add Description',
-                                style:
-                                    TextStyle(fontSize: 12, color: lightBlack),
-                              ),
-                              const SizedBox(height: 26),
-                              /*CustomOutlineButton(
-                            width: double.infinity,
-                            addIcon: false,
-                            isEnable: true,
-                            borderWidth: 2,
-                            buttonText: 'Set Deadline Project',
-                            func: () {
-                              customBottomSheet(controller, context,
-                                  title: 'Set Deadline Project',
-                                  content: CustomDateTimePicker(onDateChanged: (val){
-                                    log(val.toString());
-                                  }));
-                            },
-                          ),*/
-                              buildProgressSection(
-                                  leftTask: '1',
-                                  totalTask: task.length.toString(),
-                                  dateLeft: '13',
-                                  timeLeft: 'Dec 23 2024'),
-                              const SizedBox(height: 12),
-                              task.isNotEmpty
-                                  ? Expanded(
-                                      child: ListView.builder(
-                                        padding: const EdgeInsets.only(top: 20),
-                                        itemCount: task.length,
-                                        itemBuilder: (context, i) {
-                                          return taskTitleTile(
-                                              title: task[i].data()['title'] ??
-                                                  '');
-                                        },
-                                      ),
-                                    )
-                                  : SvgPicture.asset(
-                                      'assets/images/Empty-img.svg',
-                                      height: 400,
-                                      alignment: Alignment.bottomCenter,
-                                    )
-                            ],
-                          ),
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${data['title']}',
+                              style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.8),
+                            ),
+                            const Text(
+                              'Add Description',
+                              style: TextStyle(fontSize: 12, color: lightBlack),
+                            ),
+                            const SizedBox(height: 26),
+                            /*CustomOutlineButton(
+                          width: double.infinity,
+                          addIcon: false,
+                          isEnable: true,
+                          borderWidth: 2,
+                          buttonText: 'Set Deadline Project',
+                          func: () {
+                            customBottomSheet(controller, context,
+                                title: 'Set Deadline Project',
+                                content: CustomDateTimePicker(onDateChanged: (val){
+                                  log(val.toString());
+                                }));
+                          },
+                        ),*/
+                            buildProgressSection(
+                                leftTask: '1',
+                                totalTask: task.length.toString(),
+                                dateLeft: '13',
+                                timeLeft: 'Dec 23 2024'),
+                            const SizedBox(height: 12),
+                            task.isNotEmpty
+                                ? Expanded(
+                                    child: ListView.builder(
+                                      padding: const EdgeInsets.only(top: 20),
+                                      itemCount: task.length,
+                                      itemBuilder: (context, i) {
+                                        // DateTime dateTime = task[i].data["time"].toDate();
+                                        return taskTitleTile(
+                                          title: task[i].data()['title'] ?? '',
+                                          time:
+                                              task[i].data()['time'].toDate() ??
+                                                  '',
+                                        );
+                                      },
+                                    ),
+                                  )
+                                : SvgPicture.asset(
+                                    'assets/images/Empty-img.svg',
+                                    height: 400,
+                                    alignment: Alignment.bottomCenter,
+                                  )
+                          ],
                         );
                       })),
             ),
@@ -298,11 +299,11 @@ class ProjectDetail extends StatelessWidget {
                   buttonText: 'Create Task',
                   func: () async {
                     await controller.storeTask(
-                      projectID: data['uid'],
+                      projectID: data['id'],
                       taskModel: TodayTaskModel(
-                        title: controller.taskNameController.text,
-                        isDone: false,
-                      ),
+                          title: controller.taskNameController.text,
+                          isDone: false,
+                          time: DateTime.now()),
                     );
                   },
                   isEnable: true,

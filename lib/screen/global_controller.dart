@@ -40,14 +40,6 @@ class GlobalController extends GetxController {
           .collection('task')
           .snapshots();
 
-  Future<QuerySnapshot<Map<String, dynamic>>> getTask(dynamic data) =>
-      userCollection
-          .doc(currentUser?.uid)
-          .collection('Projects')
-          .doc(data)
-          .collection('task')
-          .get();
-
   @override
   void onInit() {
     super.onInit();
@@ -381,7 +373,7 @@ class GlobalController extends GetxController {
     }
   }
 
-// <<<<<<<<<<<<<<<<<<<<<< Get All Project >>>>>>>>>>>>>>>>>>>>>>>>>>>
+// <<<<<<<<<<<<<<<<<<<<<< Get All Data >>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   Stream? getAllProjects() {
     try {
@@ -397,6 +389,21 @@ class GlobalController extends GetxController {
     return null;
   }
 
+  Future? getAllTask(data) {
+    try {
+      final task = userCollection
+          .doc(currentUser?.uid)
+          .collection('Projects')
+          .doc(data)
+          .collection('task')
+          .get();
+      return task;
+    } on FirebaseFirestore catch (e) {
+      log('While getting all tasks: $e');
+    }
+    return null;
+  }
+
 // <<<<<<<<<<<<<<<<<<<<<< Create A Task >>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   Future storeTask(
@@ -404,8 +411,9 @@ class GlobalController extends GetxController {
     final uid = Timestamp.now().seconds.toString();
     final map = {
       'title': taskModel.title,
-      'uid': uid,
-      'done': false,
+      'id': uid,
+      'done': taskModel.isDone,
+      'time': taskModel.time,
     };
     Get.back();
     try {
@@ -426,17 +434,17 @@ class GlobalController extends GetxController {
     }
   }
 
-  getTaskData(String? projectID) async {
-    taskList.clear();
-    await userCollection
-        .doc(currentUser?.uid)
-        .collection('Projects')
-        .doc(projectID)
-        .collection('task')
-        .doc()
-        .get()
-        .then((tasks) {
-      taskList.add(tasks.data());
-    });
-  }
+  // getTaskData(String? projectID) async {
+  //   taskList.clear();
+  //   await userCollection
+  //       .doc(currentUser?.uid)
+  //       .collection('Projects')
+  //       .doc(projectID)
+  //       .collection('task')
+  //       .doc()
+  //       .get()
+  //       .then((tasks) {
+  //     taskList.add(tasks.data());
+  //   });
+  // }
 }

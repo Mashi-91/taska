@@ -4,11 +4,13 @@ import 'package:flutter/cupertino.dart';
 class TodayTaskModel {
   late String? id;
   late String title;
+  late DateTime time;
   late bool isDone;
 
   TodayTaskModel({
     this.id,
     required this.title,
+    required this.time,
     required this.isDone,
   });
 
@@ -16,6 +18,7 @@ class TodayTaskModel {
       DocumentSnapshot<Map<String, dynamic>> documentSnapshot) {
     id = documentSnapshot.data()?['uid'];
     title = documentSnapshot.data()?['title'];
+    time = documentSnapshot.data()?['time'];
     isDone = documentSnapshot.data()?['done'];
   }
 }
