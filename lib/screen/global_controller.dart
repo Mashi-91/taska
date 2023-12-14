@@ -1,36 +1,46 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math' as math;
+import 'package:logger/logger.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:taska/constant/routes.dart';
+import 'package:taska/constant/global_function.dart';
 import 'package:taska/model/project_model.dart';
-import 'package:taska/model/today_task_model.dart';
-import '../constant/snackBar.dart';
+import 'package:taska/model/task_model.dart';
+import 'package:taska/routes/appRoutes.dart';
+import 'package:taska/screen/navigation_tabs/home/homeController.dart';
 import '../constant/utils.dart';
 import '../model/fill_profile_model.dart';
 import '../screen/fill_your_profile/controller.dart';
+// import 'package:http/http.dart' as http;
 
 class GlobalController extends GetxController {
   //<<<<<<<<<<<<<<<<<< Local Variables >>>>>>>>>>>>>>>>>>>>>>>>
   var isLoading = false;
   List taskData = [];
   var imgUrl = '';
+  String backgroundImg = '';
 
-  //<<<<<<<<<<<<<<<<<< Firebase & FireStore Instances >>>>>>>>>>>>>>>>>>>>>>>>
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Firebase & FireStore Instances >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final User? currentUser = FirebaseAuth.instance.currentUser;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
+  final firebaseMessaging = FirebaseMessaging.instance;
   final userCollection = FirebaseFirestore.instance.collection('users');
+  final taskCollection = FirebaseFirestore.instance.collection('tasks');
   final firebaseStorageRef = FirebaseStorage.instance.ref();
   var currentProjectUID = '';
   var taskList = [];
   var taskUID = '';
+  String? notificationToken = '';
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getTaskSnapshot(dynamic data) =>
       userCollection
@@ -42,8 +52,60 @@ class GlobalController extends GetxController {
 
   @override
   void onInit() {
+    initMessaging();
     super.onInit();
   }
+
+  // <<<<<<<<<<<<<<<<<<< Handle Firebase Messaging >>>>>>>>>>>>>>>>>>>
+
+  // ************* Function to initialize notifications *************
+  Future<void> initMessaging() async {
+    // request permission from user
+    await firebaseMessaging.requestPermission();
+
+    // fetch the FCM token for this device
+    final fcmToken = await firebaseMessaging.getToken();
+    notificationToken = fcmToken;
+    update();
+    // print the token
+    // log('FCM Token:  ${fcmToken.toString()}');
+  }
+
+  // ************** Function FCM Notification Send **************
+
+  // Future<void> sendNotification(String text) async {
+  //   try {
+  //     if (notificationToken != '' && notificationToken != null) {
+  //       var notification = {
+  //         'notification': {'title': 'Project Created', 'body': text},
+  //         'to': notificationToken,
+  //       };
+  //
+  //       var url = Uri.parse('https://fcm.googleapis.com/fcm/send');
+  //       var headers = {
+  //         'Content-Type': 'application/json',
+  //         'Authorization':
+  //             'key=AAAAWq7g9J0:APA91bEdbD5pANMxs4u6pz2QJDO2X2brfJmzWAdfycVgENrQrSOqwrYxOXsBaiKCvzSwI7kfDpoGDKxc6c-BhjLjnrxAGERpeQjB7Sffg0HJ76rlw-17DU9Zv_YH1GuR1twawvyvd5KW', // Replace with your server key
+  //       };
+  //
+  //       var response = await http.post(
+  //         url,
+  //         headers: headers,
+  //         body: jsonEncode(notification),
+  //       );
+  //
+  //       if (response.statusCode == 200) {
+  //         log('Notification sent successfully!');
+  //       } else {
+  //         log('Failed to send notification: ${response.statusCode}');
+  //       }
+  //     } else {
+  //       log('Token Not Found');
+  //     }
+  //   } catch (e) {
+  //     log('Error sending notification: $e');
+  //   }
+  // }
 
   // <<<<<<<<<<<<<<<<<<< Firebase Functions >>>>>>>>>>>>>>>>>>>
 
@@ -51,12 +113,12 @@ class GlobalController extends GetxController {
       {required String email, required String password}) async {
     try {
       // <<<<<<<<<<<<<< Show Loading >>>>>>>>>>>>>>>>>>>
-      customLoadingIndicator(context);
+      Utils.customLoadingIndicator(context);
       //<<<<<<<<<<<<<<< Create a User >>>>>>>>>>>>>>>>>>>>>>
       await firebaseAuth
           .createUserWithEmailAndPassword(email: email, password: password)
           .then((value) async {
-        await CustomSnackBar.snackBarMsg(
+        await Utils.snackBarMsg(
             title: 'Success',
             msg: 'Your Account has been created, add your profile detail!',
             snackPosition: SnackPosition.TOP);
@@ -64,25 +126,32 @@ class GlobalController extends GetxController {
       });
     } on FirebaseAuthException catch (e) {
       if (e.code == "email-already-in-use") {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: "Email-Error", msg: "Email is already in use!");
       } else if (email.isEmpty && password.isEmpty) {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Credentials-Error', msg: 'Enter your credentials.');
       } else if (email.isEmpty) {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Email-Error', msg: 'Enter your email!');
       } else if (password.isEmpty) {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Password-Error', msg: 'Enter your password!');
       } else if (e.code == "invalid-email") {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Email-Error', msg: 'Enter a valid email!');
       } else if (e.code == "weak-password") {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Password-Error', msg: 'Password should be greater than 7.');
       }
     } catch (e) {
+      Get.back();
       log("CreateEmailAndPassword: $e");
     }
   }
@@ -94,29 +163,28 @@ class GlobalController extends GetxController {
       required FillProfileController controller}) async {
     try {
       // <<<<<<<<<<<<<< Show Loading >>>>>>>>>>>>>>>>>>>
-      customLoadingIndicator(context);
+      Utils.customLoadingIndicator(context);
       //<<<<<<<<<<<<<<< Store User Data >>>>>>>>>>>>>>>>>>>>>>
       if (controller.image.isEmpty) {
-        CustomSnackBar.snackBarMsg(
+        Utils.snackBarMsg(
             title: 'Store-User-Error', msg: 'Please add your profile image.');
       } else if (controller.fullNameController.text.isEmpty) {
-        CustomSnackBar.snackBarMsg(
+        Utils.snackBarMsg(
             title: 'Store-User-Error', msg: 'Enter your Full Name.');
       } else if (controller.userNameController.text.isEmpty) {
-        CustomSnackBar.snackBarMsg(
+        Utils.snackBarMsg(
             title: 'Store-User-Error', msg: 'Enter your User Name.');
       } else if (controller.dateOfBirth.isEmpty) {
-        CustomSnackBar.snackBarMsg(
+        Utils.snackBarMsg(
             title: 'Store-User-Error', msg: 'Enter your Date of Birth.');
       } else if (controller.fillYourEmailAddress.text.isEmpty) {
-        CustomSnackBar.snackBarMsg(
+        Utils.snackBarMsg(
             title: 'Store-User-Error', msg: 'Enter your Email-ID.');
       } else if (controller.phoneController.text.isEmpty) {
-        CustomSnackBar.snackBarMsg(
+        Utils.snackBarMsg(
             title: 'Store-User-Error', msg: 'Enter your Phone Number.');
       } else if (controller.roleController.text.isEmpty) {
-        CustomSnackBar.snackBarMsg(
-            title: 'Store-User-Error', msg: 'Enter your Role.');
+        Utils.snackBarMsg(title: 'Store-User-Error', msg: 'Enter your Role.');
       } else {
         await currentUser
             ?.updateDisplayName(controller.userNameController.text);
@@ -127,12 +195,13 @@ class GlobalController extends GetxController {
             .doc(currentUser?.uid)
             .set(createUserModel.toJson())
             .then((value) async {
-          await CustomSnackBar.snackBarMsg(
+          await Utils.snackBarMsg(
               title: 'Success', msg: 'Your profile has been created.');
           Get.offAllNamed("/SignIn");
         });
       }
     } on FirebaseFirestore catch (e) {
+      Get.back();
       log("FirebaseFireStore: $e");
     }
   }
@@ -143,7 +212,7 @@ class GlobalController extends GetxController {
       {required String email, required String password}) async {
     try {
       // <<<<<<<<<<<<<< Show Loading >>>>>>>>>>>>>>>>>>>
-      customLoadingIndicator(context);
+      Utils.customLoadingIndicator(context);
       //<<<<<<<<<<<<<<< SignInUser >>>>>>>>>>>>>>>>>>>>>>
       await firebaseAuth
           .signInWithEmailAndPassword(email: email, password: password)
@@ -152,30 +221,38 @@ class GlobalController extends GetxController {
       });
     } on FirebaseAuthException catch (e) {
       if (e.code == "email-already-in-use") {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: "Sign-In-User-Error", msg: "Email is already in use!");
       } else if (email.isEmpty && password.isEmpty) {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Sign-In-User-Error', msg: 'Enter your credentials.');
       } else if (email.isEmpty) {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Sign-In-User-Error', msg: 'Enter your email!');
       } else if (password.isEmpty) {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Sign-In-User-Error', msg: 'Enter your password!');
       } else if (e.code == "user-not-found") {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Sign-In-User-Error',
             msg:
                 "There's no email with this email-id, Please go ahead & create one!");
       } else if (e.code == "invalid-email") {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Sign-In-User-Error', msg: 'Enter a valid email!');
       } else if (e.code == "weak-password") {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Sign-In-User-Error', msg: 'Wrong Password!');
       }
     } catch (e) {
+      Get.back();
       log("Sign-In-User-WithEmailAndPass: $e");
     }
   }
@@ -203,10 +280,10 @@ class GlobalController extends GetxController {
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
-              CustomButton(
+              Utils.buildCustomButton(
                 buttonText: 'Go to Homepage',
                 func: () {
-                  Get.offAllNamed(signInSignUpScreen);
+                  Get.offAllNamed(AppRoutes.signInSignUpScreen);
                 },
                 width: 230,
                 height: 46,
@@ -218,14 +295,17 @@ class GlobalController extends GetxController {
       });
     } on FirebaseAuthException catch (e) {
       if (e.code == "auth/invalid-email") {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: 'Reset-Password-Error', msg: "Enter a valid email-address!");
       } else if (e.code == "auth/user-not-found") {
-        return CustomSnackBar.snackBarMsg(
+        Get.back();
+        return Utils.snackBarMsg(
             title: "Reset-Password-Error",
             msg: "Your email-address not registered!");
       }
     } catch (e) {
+      Get.back();
       log("Reset-Password-Error: $e");
     }
   }
@@ -248,29 +328,49 @@ class GlobalController extends GetxController {
         onPress: () {}),*/
   ];
 
-// <<<<<<<<<<<<<<<<<<<<<< Create A Project >>>>>>>>>>>>>>>>>>>>>>>>>>>
+  // ********************** Create A Project **********************
+
   Future storeProject({required String title}) async {
     final uid = Timestamp.now().seconds.toString();
-    final map = ProjectModel(id: uid, title: title, cover: '').toJson();
-    Get.back();
+
     try {
+      Utils.customLoadingIndicator(
+          Get.context!); // Show a custom loading indicator
+
+      final backgroundImg = await getRandomImage();
+      final projectColor =
+          GlobalFunction.convertColorToHex(getRandomColor(Utils.staticColors));
+
+      final map = ProjectModel(
+        id: uid,
+        title: title,
+        cover: '',
+        backgroundCover: backgroundImg,
+        projectColor: projectColor,
+      ).toJson();
+
       await userCollection
           .doc(currentUser?.uid)
           .collection('Projects')
           .doc(uid)
           .set(map)
           .then((value) async {
-        Get.toNamed(titleScreen, arguments: map);
+        Get.back(); // Close the loading indicator
+        Get.back(); // Close the bottom sheet
+
+        Get.toNamed(AppRoutes.createProjectScreen, arguments: map);
         currentProjectUID = uid;
         update();
       });
     } on FirebaseFirestore catch (e) {
-      log('Hlo This is Error From StoreData $e');
+      log('Error storing data: $e');
+      Get.back(); // Close the loading indicator in case of an error
+      Get.back(); // Close the bottom sheet in case of an error
     }
   }
 
-  // <<<<<<<<<<<<<<<<<<<<<< Upload Image >>>>>>>>>>>>>>>>>>>>>>>>>>>
-  uploadImg({File? cover}) async {
+  // ********************* Upload Image *********************
+  Future<void> uploadImg({File? cover}) async {
     try {
       final path = cover!.path
           .replaceAll('/data/user/0/com.example.taska/app_flutter/', '');
@@ -286,13 +386,13 @@ class GlobalController extends GetxController {
     }
   }
 
-  updateProject({File? cover}) async {
+  void updateProject({File? cover, String? currentProjectId}) async {
     try {
       await uploadImg(cover: cover);
       await userCollection
           .doc(currentUser?.uid)
           .collection('Projects')
-          .doc(currentProjectUID)
+          .doc(currentProjectUID.isEmpty ? currentProjectId : currentProjectUID)
           .update({
         'cover': imgUrl,
       });
@@ -301,14 +401,16 @@ class GlobalController extends GetxController {
     }
   }
 
-  addTaskUID(String? uid) async {
+  void addTaskUID(String? projectUID) async {
     try {
-      await userCollection
+      final timeStamp = Timestamp.now().millisecondsSinceEpoch.toString();
+      await taskCollection
           .doc(currentUser!.uid)
-          .collection('Projects')
-          .doc(uid)
+          .collection('Tasks')
+          .doc(timeStamp)
           .set({
-        'taskUID': taskUID,
+        'taskID': timeStamp,
+        'projectID': projectUID,
       });
       log(taskUID);
     } on FirebaseFirestore catch (e) {
@@ -339,48 +441,74 @@ class GlobalController extends GetxController {
     }
   }
 
-  deleteProject({String? uid}) async {
-    final batch = FirebaseFirestore.instance.batch();
-
-    final projectDocRef =
-        userCollection.doc(currentUser?.uid).collection('Projects').doc(uid);
-
-    // Query for tasks and delete them
-    final tasksQuerySnapshot = await projectDocRef.collection('task').get();
-    for (final taskDocSnapshot in tasksQuerySnapshot.docs) {
-      batch.delete(taskDocSnapshot.reference);
-    }
-
-    // Delete project document
-    batch.delete(projectDocRef);
-
-    // Delete project cover from Firebase Storage if it exist
-    final storageRef =
-        firebaseStorageRef.child('${currentUser?.uid}/projectCover/$uid.jpg');
+  Future<void> deleteProject(
+      {String? uid, required BuildContext context}) async {
     try {
-      await storageRef.getDownloadURL();
-      await storageRef.delete();
-    } catch (e) {
-      log(e.toString());
-    }
+      Utils.customLoadingIndicator(context);
 
-    // Commit the batch
-    try {
+      final batch = FirebaseFirestore.instance.batch();
+
+      final projectDocRef =
+          userCollection.doc(currentUser?.uid).collection('Projects').doc(uid);
+
+      // Query for tasks and delete them
+      final tasksQuerySnapshot = await userCollection
+          .doc(currentUser?.uid)
+          .collection('Tasks')
+          .where('projectId', isEqualTo: uid)
+          .get();
+
+      if (tasksQuerySnapshot.docs.isNotEmpty) {
+        for (final taskDocSnapshot in tasksQuerySnapshot.docs) {
+          batch.delete(taskDocSnapshot.reference);
+        }
+      }
+
+      // Get project cover and delete it from Firebase Storage if it exists
+      final projectData = await projectDocRef.get();
+      final coverPath = projectData.data()?['cover'] ?? '';
+
+      if (coverPath.isNotEmpty) {
+        final storageRef = firebaseStorageRef.child('$uid.jpg');
+
+        // Check if the project cover exists in Firebase Storage
+        final coverSnapshot = await storageRef.getMetadata();
+        if (coverSnapshot != null) {
+          await storageRef.delete();
+          Logger().d('Project cover deleted');
+        }
+      }
+
+      // Delete project document
+      batch.delete(projectDocRef);
+
+      // closing Loading
+      Get.back();
+
+      // closing bottomSheet
+      Get.back();
+
+      // Commit the batch
       await batch.commit();
-      Get.offNamedUntil(homeNavigationController, (route) => route.isCurrent);
-    } on FirebaseFirestore catch (e) {
-      log('Error deleting project and tasks: $e');
+    } catch (e, stackTrace) {
+      // closing Loading
+      Get.back();
+
+      // closing bottomSheet
+      Get.back();
+      Logger().e('Error deleting project and tasks: $e',
+          error: e, stackTrace: stackTrace);
     }
   }
 
-// <<<<<<<<<<<<<<<<<<<<<< Get All Data >>>>>>>>>>>>>>>>>>>>>>>>>>>
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Get All Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   Stream? getAllProjects() {
     try {
       final user = userCollection
           .doc(currentUser?.uid)
           .collection('Projects')
-          // .orderBy('uid', descending: true)
+          .orderBy('id', descending: true)
           .snapshots();
       return user;
     } on FirebaseFirestore catch (e) {
@@ -389,62 +517,129 @@ class GlobalController extends GetxController {
     return null;
   }
 
-  Future? getAllTask(data) {
+  Stream<QuerySnapshot<Map<String, dynamic>>> getAllTaskAsStream(
+      String projectId) {
     try {
-      final task = userCollection
-          .doc(currentUser?.uid)
-          .collection('Projects')
-          .doc(data)
-          .collection('task')
-          .get();
-      return task;
-    } on FirebaseFirestore catch (e) {
-      log('While getting all tasks: $e');
+      if (currentUser != null) {
+        return userCollection
+            .doc(currentUser!.uid)
+            .collection(
+                'Tasks') // Assuming 'tasks' is the root collection for tasks
+            .where('projectId', isEqualTo: projectId)
+            .where('userId', isEqualTo: currentUser!.uid)
+            .snapshots();
+      } else {
+        // Handle the case where the user is not authenticated
+        Logger().w('User not authenticated');
+        return const Stream.empty(); // Return an empty stream
+      }
+    } catch (e) {
+      // Catch any errors that occur during the process
+      Logger().e('Error getting all tasks: $e', error: e);
+      return const Stream.empty(); // Return an empty stream
     }
-    return null;
   }
 
-// <<<<<<<<<<<<<<<<<<<<<< Create A Task >>>>>>>>>>>>>>>>>>>>>>>>>>>
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Create A Task >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-  Future storeTask(
-      {required TodayTaskModel taskModel, required String projectID}) async {
-    final uid = Timestamp.now().seconds.toString();
-    final map = {
-      'title': taskModel.title,
-      'id': uid,
-      'done': taskModel.isDone,
-      'time': taskModel.time,
-    };
-    Get.back();
+  Future<void> storeTask({
+    required TaskModel taskModel,
+  }) async {
+    try {
+      final userId = currentUser?.uid;
+
+      if (userId != null) {
+        final uid = Timestamp.now().seconds.toString();
+
+        final map = TaskModel(
+          taskId: uid,
+          projectId: taskModel.projectId,
+          userId: userId,
+          title: taskModel.title,
+          time: taskModel.time,
+          isDone: taskModel.isDone,
+        ).toJson();
+
+        await userCollection
+            .doc(userId)
+            .collection('Tasks')
+            .doc(uid)
+            .set(map)
+            .then((value) {
+          Logger().t('Your task is create!');
+        });
+        Get.back(); // Navigating back using GetX
+      } else {
+        // Handle the case where the user is not authenticated
+        // You can throw an error or log a message here
+        Logger().w('User not authenticated');
+      }
+    } catch (e) {
+      // Catch any errors that occur during the process
+      Logger().e('Error getting all tasks: $e', error: e);
+    }
+  }
+
+  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< GetRandom Image >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  Future<String> getRandomImage() async {
+    // List of image paths in your assets
+    List<String> imagePaths = [
+      'assets/background_images/home-1.jpg',
+      'assets/background_images/home-2.jpg',
+      'assets/background_images/home-3.jpg',
+      'assets/background_images/home-4.jpg',
+      'assets/background_images/home-5.jpg',
+      'assets/background_images/home-6.jpg',
+    ];
+
+    // Generate a random index within the range of available images
+    int randomIndex = math.Random().nextInt(imagePaths.length);
+
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    // Return the randomly selected image path
+    backgroundImg = imagePaths[randomIndex];
+    update();
+
+    return imagePaths[randomIndex];
+  }
+
+  Color getRandomColor(List<Color> staticColors) {
+    final math.Random random = math.Random();
+    return staticColors[random.nextInt(staticColors.length)];
+  }
+
+  // Function to update color in Firebase
+  void updateColorInFirebase(
+      String currentProjectId, MaterialColor color) async {
     try {
       await userCollection
           .doc(currentUser?.uid)
           .collection('Projects')
-          .doc(projectID)
-          .collection('task')
-          .doc(uid)
-          .set(map)
-          .then((value) {
-        taskUID = uid;
-        update();
+          .doc(currentProjectId)
+          .update({
+        'projectColor': GlobalFunction.convertMaterialColorToHex(color)
       });
-      refresh();
-    } on FirebaseFirestore catch (e) {
-      log('Hlo This is Error From StoreData $e');
+      Logger().i('Color updated successfully in Firebase!');
+    } catch (e, stackTrace) {
+      Logger().e('Error updating color in Firebase: $e',
+          error: e, stackTrace: stackTrace);
+      // Handle the error as needed, such as displaying an error message or logging
     }
   }
 
-  // getTaskData(String? projectID) async {
-  //   taskList.clear();
-  //   await userCollection
-  //       .doc(currentUser?.uid)
-  //       .collection('Projects')
-  //       .doc(projectID)
-  //       .collection('task')
-  //       .doc()
-  //       .get()
-  //       .then((tasks) {
-  //     taskList.add(tasks.data());
-  //   });
-  // }
+// getTaskData(String? projectID) async {
+//   taskList.clear();
+//   await userCollection
+//       .doc(currentUser?.uid)
+//       .collection('Projects')
+//       .doc(projectID)
+//       .collection('task')
+//       .doc()
+//       .get()
+//       .then((tasks) {
+//     taskList.add(tasks.data());
+//   });
+// }
 }

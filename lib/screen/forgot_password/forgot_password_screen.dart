@@ -15,7 +15,7 @@ class ForgotPasswordScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(ForgotPasswordController());
     return Scaffold(
-      appBar: customAppbar(title: "Forgot Password", isGoBack: true),
+      appBar: Utils.customAppbar(title: "Forgot Password", isGoBack: true),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: Get.width * 0.04)
@@ -46,7 +46,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 30),
-              CustomButton(
+              Utils.buildCustomButton(
                 buttonText: "Continue",
                 isEnable: controller.isForgotPasswordButtonEnable.value,
                 func: () {

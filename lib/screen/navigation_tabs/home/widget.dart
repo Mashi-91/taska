@@ -10,15 +10,12 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:stylish_bottom_bar/model/bar_items.dart';
 import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
 import 'package:taska/constant/utils.dart';
-import 'package:taska/model/today_task_model.dart';
+import 'package:taska/model/task_model.dart';
 
 import '../../../constant/color.dart';
-import '../controller.dart';
+import 'homeController.dart';
 
-Widget homeAppBar(
-    {String title = 'Taska',
-    Widget action =
-        const Icon(FluentIcons.alert_32_filled, color: primaryColor)}) {
+Widget homeAppBar({String title = 'Taska', Widget? action}) {
   return Row(
     children: [
       SvgPicture.asset(
@@ -33,11 +30,10 @@ Widget homeAppBar(
             const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
       ),
       const Spacer(),
-      action
+      action ?? Container(),
     ],
   );
 }
-
 
 Widget customBottomNavigationBar({
   required void Function(int) onTap,
@@ -51,9 +47,10 @@ Widget customBottomNavigationBar({
     bottomBarItem(
         paddingRight: 24,
         paddingUp: 4,
-        icon: SvgToIcon(iconName: 'project-regular-icon', color: lightGrey),
+        icon: Utils.buildSvgToIcon(
+            iconName: 'project-regular-icon', color: ColorsUtil.lightGrey),
         label: 'Project',
-        selectIcon: SvgToIcon(iconName: 'project-filled-icon')),
+        selectIcon: Utils.buildSvgToIcon(iconName: 'project-filled-icon')),
     bottomBarItem(
         paddingLeft: 24,
         icon: const Icon(FluentIcons.image_16_regular, size: 26),
@@ -83,8 +80,8 @@ BottomBarItem bottomBarItem({
   double? paddingUp = 0,
   double? paddingDown = 0,
   required Widget selectIcon,
-  Color selectedColor = primaryColor,
-  Color unSelectedColor = lightGrey,
+  Color selectedColor = ColorsUtil.primaryColor,
+  Color unSelectedColor = ColorsUtil.lightGrey,
 }) {
   return BottomBarItem(
     icon: Padding(
@@ -109,5 +106,3 @@ BottomBarItem bottomBarItem({
     unSelectedColor: unSelectedColor,
   );
 }
-
-

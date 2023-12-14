@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:taska/constant/snackBar.dart';
 import 'package:taska/screen/auth/sign_up/controller.dart';
 
 class FillProfileController extends SignUpController {

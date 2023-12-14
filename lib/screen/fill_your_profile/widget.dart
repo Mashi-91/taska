@@ -26,9 +26,9 @@ Widget circleProfile(FillProfileController controller) {
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.grey.withOpacity(0.1)),
-                child: Icon(
+                child: const Icon(
                   FluentIcons.person_20_filled,
-                  color: lightGrey,
+                  color: ColorsUtil.lightGrey,
                   size: 120,
                 ),
               ),
@@ -120,7 +120,7 @@ Widget textFieldSection(
       const SizedBox(height: 16),
       textFieldForFillYourProfile(
         hintText: 'Email',
-        onChanged: (val) =>controller.isButtonEnabled(),
+        onChanged: (val) => controller.isButtonEnabled(),
         controller: controller.fillYourEmailAddress,
       ),
       const SizedBox(height: 16),

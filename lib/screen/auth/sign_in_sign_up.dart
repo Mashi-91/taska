@@ -37,7 +37,7 @@ class SignInSignUp extends StatelessWidget {
                   },
                   child: const Text("Sign up",
                       style: TextStyle(
-                        color: primaryColor,
+                        color: ColorsUtil.primaryColor,
                         fontWeight: FontWeight.bold,
                       )),
                 )

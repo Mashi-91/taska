@@ -6,7 +6,6 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:taska/constant/color.dart';
 import 'package:taska/screen/auth/sign_up/controller.dart';
 import 'package:taska/screen/auth/sign_up/sign_up_widget.dart';
-import 'package:taska/screen/fill_your_profile/controller.dart';
 
 import '../../../constant/utils.dart';
 
@@ -18,7 +17,7 @@ class SignUpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: customAppbar(isGoBack: true),
+      appBar: Utils.customAppbar(isGoBack: true),
       body: GetBuilder<SignUpController>(
         builder: (controller) => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14.0).copyWith(
@@ -32,7 +31,7 @@ class SignUpScreen extends StatelessWidget {
                   controller: controller,
                 ),
                 SizedBox(height: Get.height * 0.03),
-                CustomButton(
+                Utils.buildCustomButton(
                   buttonText: 'Sign up',
                   isEnable: controller.isSignUpButtonEnable,
                   func: () async {
@@ -59,7 +58,7 @@ class SignUpScreen extends StatelessWidget {
                       },
                       child: const Text("Sign in",
                           style: TextStyle(
-                            color: primaryColor,
+                            color: ColorsUtil.primaryColor,
                             fontWeight: FontWeight.bold,
                           )),
                     )

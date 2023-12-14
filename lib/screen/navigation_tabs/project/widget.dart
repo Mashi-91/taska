@@ -9,13 +9,14 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 
 import '../../../constant/color.dart';
 import '../../../constant/utils.dart';
-import '../../../model/today_task_model.dart';
-import '../controller.dart';
+import '../../../model/task_model.dart';
+import '../home/homeController.dart';
 
-Future customBottomSheet(HomeController controller, BuildContext context,
+Future customBottomSheet(dynamic controller, BuildContext context,
     {required String title,
     Color? titleColor,
     required Widget content,
+    double? bottomPadding,
     RouteSettings? routeSetting}) {
   return showModalBottomSheet(
       context: context,
@@ -30,11 +31,11 @@ Future customBottomSheet(HomeController controller, BuildContext context,
               padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom + 14),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 20)
+                    .copyWith(top: 8, bottom: bottomPadding ?? 8),
                 child: Column(
                   children: [
-                    CustomDivider(height: 3, width: 40),
+                    Utils.buildCustomDivider(height: 3, width: 40),
                     const SizedBox(height: 16),
                     Text(
                       title,
@@ -44,7 +45,7 @@ Future customBottomSheet(HomeController controller, BuildContext context,
                           color: titleColor ?? Colors.black),
                     ),
                     const SizedBox(height: 16),
-                    CustomDivider(
+                    Utils.buildCustomDivider(
                       width: double.infinity,
                       height: 2,
                       color: Colors.grey.withOpacity(0.1),
@@ -61,8 +62,16 @@ Future customBottomSheet(HomeController controller, BuildContext context,
 buildProgressSection(
     {required String totalTask,
     required String leftTask,
-    required String timeLeft,
-    required String dateLeft}) {
+    required String deadLine}) {
+  // final daysLeft = Utils.calculateDaysLeft(DateTime(deadLine));
+  DateTime deadlineDate = DateFormat('MMM dd yyyy').parse(deadLine);
+
+  DateTime now = DateTime.now();
+
+  Duration difference = deadlineDate.difference(now);
+  // log(difference.inDays.toString());
+  // int daysLeft = Utils.calculateDaysLeftUntilDeadline(deadLine);
+  // log(daysLeft.toString());
   return Column(
     children: [
       Row(
@@ -71,11 +80,11 @@ buildProgressSection(
         children: [
           Container(
             decoration: BoxDecoration(
-                color: primaryColor,
+                color: ColorsUtil.primaryColor,
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: const [
                   BoxShadow(
-                      color: lightGrey,
+                      color: ColorsUtil.lightGrey,
                       spreadRadius: 2,
                       offset: Offset(0, 2),
                       blurRadius: 3),
@@ -87,7 +96,7 @@ buildProgressSection(
             ),
           ),
           Text(
-            '$timeLeft Days Left, $dateLeft',
+            ' Days Left, $deadLine',
             style: const TextStyle(fontSize: 10, color: Colors.grey),
           )
         ],
@@ -102,14 +111,14 @@ buildProgressSection(
         barRadius: const Radius.circular(12),
         percent: 0.5,
         backgroundColor: Colors.grey.withOpacity(0.3),
-        progressColor: primaryColor,
+        progressColor: ColorsUtil.primaryColor,
       )
     ],
   );
 }
 
 Widget projectCardWithImg({
-  required String backGroundImg,
+  required dynamic imageProvider,
   required String title,
   required String subTitle,
   required Function onTapOption,
@@ -121,16 +130,16 @@ Widget projectCardWithImg({
 }) {
   final size = Get.height;
   return Container(
-    margin:
-        margin ?? const EdgeInsets.symmetric(horizontal: 4).copyWith(bottom: 0),
+    margin: margin ??
+        EdgeInsets.symmetric(horizontal: Get.width * 0.01).copyWith(bottom: 0),
     decoration:
         BoxDecoration(borderRadius: BorderRadius.circular(20), boxShadow: [
       BoxShadow(
-          offset: const Offset(0, 2),
-          color: Colors.grey.withOpacity(0.1),
-          // color: Colors.red,
-          spreadRadius: 1,
-          blurRadius: 20)
+        offset: const Offset(0, 2), // Positive X value for right side shadow
+        color: Colors.grey.withOpacity(0.3),
+        spreadRadius: 2,
+        blurRadius: 8,
+      )
     ]),
     width: double.infinity,
     height: size * 0.34,
@@ -143,20 +152,24 @@ Widget projectCardWithImg({
                 topLeft: Radius.circular(20), topRight: Radius.circular(20)),
             image: DecorationImage(
               fit: BoxFit.cover,
-              image: CachedNetworkImageProvider(
-                  Uri.parse(backGroundImg).toString()),
+              image: imageProvider,
             ),
           ),
         ),
         Expanded(
           child: Material(
+            borderRadius: const BorderRadius.only(
+              bottomRight: Radius.circular(20),
+              bottomLeft: Radius.circular(20),
+            ),
             child: SingleChildScrollView(
               child: Container(
                 decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                        bottomRight: Radius.circular(20),
-                        bottomLeft: Radius.circular(20))),
-                padding: const EdgeInsets.symmetric(horizontal: 20)
+                    // borderRadius: BorderRadius.only(
+                    //     bottomRight: Radius.circular(20),
+                    //     bottomLeft: Radius.circular(20)),
+                    ),
+                padding: EdgeInsets.symmetric(horizontal: Get.width * 0.06)
                     .copyWith(bottom: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,7 +185,7 @@ Widget projectCardWithImg({
                         IconButton(
                             onPressed: () => onTapOption(),
                             icon: const Icon(Icons.pending_outlined,
-                                color: lightGrey))
+                                color: ColorsUtil.lightGrey))
                       ],
                     ),
                     Text(
@@ -184,8 +197,7 @@ Widget projectCardWithImg({
                     buildProgressSection(
                       totalTask: totalTask,
                       leftTask: leftTask,
-                      timeLeft: timeLeft,
-                      dateLeft: dateLeft,
+                      deadLine: timeLeft,
                     )
                   ],
                 ),
@@ -246,7 +258,7 @@ Widget projectCardWithoutImg({
                         IconButton(
                             onPressed: () => onTapOption(),
                             icon: const Icon(Icons.pending_outlined,
-                                color: lightGrey))
+                                color: ColorsUtil.lightGrey))
                       ],
                     ),
                     Text(
@@ -257,8 +269,7 @@ Widget projectCardWithoutImg({
                     buildProgressSection(
                       totalTask: totalTask,
                       leftTask: leftTask,
-                      timeLeft: timeLeft,
-                      dateLeft: dateLeft,
+                      deadLine: timeLeft,
                     )
                   ],
                 ),
@@ -269,7 +280,7 @@ Widget projectCardWithoutImg({
   );
 }
 
-Widget taskTile({required TodayTaskModel taskModel}) {
+Widget taskTile({required TaskModel taskModel}) {
   return Container(
     decoration: BoxDecoration(
         color: Colors.white,
@@ -297,7 +308,7 @@ Widget taskTile({required TodayTaskModel taskModel}) {
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
-                    color: primaryColor,
+                    color: ColorsUtil.primaryColor,
                     borderRadius: BorderRadius.circular(4)),
                 child: const Icon(
                   Icons.check,
@@ -310,7 +321,7 @@ Widget taskTile({required TodayTaskModel taskModel}) {
                 decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: primaryColor)),
+                    border: Border.all(color: ColorsUtil.primaryColor)),
               ),
       ),
     ),
@@ -320,7 +331,7 @@ Widget taskTile({required TodayTaskModel taskModel}) {
 Widget taskTitleTile({required String title, required DateTime time}) {
   DateTime now = DateTime.now();
   DateTime today = DateTime(now.year, now.month, now.day);
-  DateTime yesterday = today.subtract(Duration(days: 1));
+  DateTime yesterday = today.subtract(const Duration(days: 1));
 
   String displayText;
 
@@ -333,9 +344,9 @@ Widget taskTitleTile({required String title, required DateTime time}) {
   }
   return Container(
     margin: const EdgeInsets.only(right: 80, bottom: 12),
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
     decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorsUtil.transparent,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
@@ -359,8 +370,6 @@ Widget taskTitleTile({required String title, required DateTime time}) {
             )
           ],
         ),
-        const SizedBox(height: 8),
-        Text('$displayText')
       ],
     ),
   );
@@ -377,7 +386,7 @@ Widget customIconButton(
         Container(
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            color: lightGrey.withOpacity(0.2),
+            color: ColorsUtil.lightGrey.withOpacity(0.2),
             shape: BoxShape.circle,
           ),
           child: Icon(iconData, size: 40),

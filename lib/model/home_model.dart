@@ -8,7 +8,7 @@ class HomeModel {
 
   HomeModel({
     this.id,
-    this.homeImg = 'assets/images/home_1_image.jpg',
+    this.homeImg = 'assets/images/home-1.jpg',
     required this.title,
     required this.subTitle,
     required this.onPress,

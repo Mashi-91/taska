@@ -1,18 +1,19 @@
 import 'dart:developer';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:multiple_stream_builder/multiple_stream_builder.dart';
 import 'package:taska/constant/color.dart';
-import 'package:taska/constant/routes.dart';
+import 'package:taska/routes/appRoutes.dart';
 import 'package:taska/screen/navigation_tabs/home/widget.dart';
 
 import '../../../constant/utils.dart';
-import '../controller.dart';
+import 'homeController.dart';
 import '../project/widget.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -23,7 +24,12 @@ class HomeScreen extends StatelessWidget {
     final controller = Get.put(HomeController());
     return Scaffold(
       appBar: AppBar(
-        title: homeAppBar(),
+        title: homeAppBar(
+          action: const Icon(
+            FluentIcons.alert_12_filled,
+            color: ColorsUtil.primaryColor,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -34,16 +40,16 @@ class HomeScreen extends StatelessWidget {
                   const EdgeInsets.symmetric(horizontal: 18).copyWith(top: 12),
               child: Column(
                 children: [
-                  customTextField(
+                  Utils.buildCustomTextField(
                     controller: controller.searchController,
                     hintText: 'Search',
                     prefixIcon: const Icon(
                       FluentIcons.search_20_filled,
-                      color: lightGrey,
+                      color: ColorsUtil.lightGrey,
                     ),
                     suffixIcon: const Icon(
                       FluentIcons.options_16_regular,
-                      color: primaryColor,
+                      color: ColorsUtil.primaryColor,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -56,11 +62,12 @@ class HomeScreen extends StatelessWidget {
                             fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       InkWell(
-                        onTap: () => Get.toNamed(seeAllScreen),
+                        onTap: () => Get.toNamed(AppRoutes.seeAllScreen),
                         child: const Text(
                           'See All',
                           style: TextStyle(
-                              color: primaryColor, fontWeight: FontWeight.bold),
+                              color: ColorsUtil.primaryColor,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -77,23 +84,27 @@ class HomeScreen extends StatelessWidget {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
                         child: LoadingAnimationWidget.stretchedDots(
-                            color: primaryColor, size: 20),
+                            color: ColorsUtil.primaryColor, size: 20),
                       );
                     } else if (snapshot.hasData) {
-                      final project = snapshot.data?.docs;
-                      return CarouselSlider.builder(
-                        itemCount: project?.take(2).length,
-                        itemBuilder: (_, i, val) {
-                          return project == null || project.isEmpty
-                              ? SvgPicture.asset('assets/images/Empty-img.svg')
-                              : projectCardWithImg(
-                                  backGroundImg: project[i]['cover'] != ''
-                                      ? project[i]['cover']
-                                      : 'https://armysportsinstitute.com/wp-content/themes/armysports/images/noimg.png',
+                      final List<QueryDocumentSnapshot>? project =
+                          snapshot.data?.docs;
+                      return project == null || project.isEmpty
+                          ? SvgPicture.asset('assets/images/Empty-img.svg')
+                          : CarouselSlider.builder(
+                              itemCount: project.take(2).length,
+                              itemBuilder: (_, i, val) {
+                                return projectCardWithImg(
+                                  imageProvider: project[i]['cover'] != ''
+                                      ? CachedNetworkImageProvider(
+                                          Uri.parse(project[i]['cover'])
+                                              .toString())
+                                      : AssetImage(
+                                          project[i]['backgroundCover']),
                                   title: project[i]['title'] ?? '',
                                   subTitle: 'subTitle',
                                   onTapOption: () {
-                                    Get.toNamed(projectDetail,
+                                    Get.toNamed(AppRoutes.projectDetail,
                                         arguments: project[i].data());
                                   },
                                   leftTask: '1',
@@ -101,15 +112,15 @@ class HomeScreen extends StatelessWidget {
                                   dateLeft: '',
                                   timeLeft: '',
                                 );
-                        },
-                        options: CarouselOptions(
-                          height: 320,
-                          viewportFraction: 0.93,
-                          enableInfiniteScroll: false,
-                          enlargeCenterPage: true,
-                          disableCenter: false,
-                        ),
-                      );
+                              },
+                              options: CarouselOptions(
+                                height: Get.height * 0.34,
+                                viewportFraction: 0.93,
+                                enableInfiniteScroll: false,
+                                enlargeCenterPage: true,
+                                disableCenter: false,
+                              ),
+                            );
                     }
                     return Center(
                       child: Text('Error: ${snapshot.error}'),
@@ -134,7 +145,8 @@ class HomeScreen extends StatelessWidget {
                         child: const Text(
                           'See All',
                           style: TextStyle(
-                              color: primaryColor, fontWeight: FontWeight.bold),
+                              color: ColorsUtil.primaryColor,
+                              fontWeight: FontWeight.bold),
                         ),
                       )
                     ],

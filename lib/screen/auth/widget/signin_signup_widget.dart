@@ -62,7 +62,7 @@ Widget bottomSection({required VoidCallback signWithPass}) {
         ),
       ),
       SizedBox(height: Get.height * 0.05),
-      CustomButton(
+      Utils.buildCustomButton(
         isEnable: true,
         buttonText: "Sign in with password",
         func: signWithPass,

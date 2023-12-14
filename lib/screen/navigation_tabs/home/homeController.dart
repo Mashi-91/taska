@@ -8,20 +8,21 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:taska/screen/global_controller.dart';
-import 'cover_screen.dart';
-import 'home/home_screen.dart';
-import 'profile_screen.dart';
-import 'project_screen.dart';
+import '../coverScreen/cover_screen.dart';
+import 'home_screen.dart';
+import '../profileScreen/profile_screen.dart';
+import '../projectScreen/project_screen.dart';
 
 class HomeController extends GlobalController {
   late final TextEditingController searchController;
   late final TextEditingController projectNameController;
-  late final TextEditingController taskNameController;
 
   var isTaskValueComplete = false.obs;
   var currentIndex = 0.obs;
   final selected = 'Visibility'.obs;
   final isCover = false.obs;
+  List<Color> colorList = [];
+
   File? photo;
 
   //<<<<<<<<<<<<<<<< Pages >>>>>>>>>>>>>>>>>>>
@@ -37,7 +38,6 @@ class HomeController extends GlobalController {
     super.onInit();
     searchController = TextEditingController();
     projectNameController = TextEditingController();
-    taskNameController = TextEditingController();
   }
 
   @override
@@ -45,37 +45,44 @@ class HomeController extends GlobalController {
     super.dispose();
     searchController.dispose();
     projectNameController.dispose();
-    taskNameController.dispose();
   }
 
-  isTaskComplete() {
-    isTaskValueComplete.value = !isTaskValueComplete.value;
-  }
-
-  isActive(var i) {
-    currentIndex.value = i++;
-  }
-
-  //<<<<<<<<<<<<<<<<<Functions>>>>>>>>>>>>>>>>>>>>>
-  isCurrentSelected(String val) {
-    selected.value = val;
-  }
-
-  isCoverFunc() {
+  // <<<<<<<<<<<<<<<<< Functions >>>>>>>>>>>>>>>>>>>>>
+  void isCoverFunc() {
     isCover.value = !isCover.value;
   }
 
-  Future<void> imagePickerFromCamera({dynamic data}) async {
+  void clearProjectNameText() {
+    projectNameController.clear();
+  }
+
+  void isTaskComplete() {
+    isTaskValueComplete.value = !isTaskValueComplete.value;
+  }
+
+  void isActive(var i) {
+    currentIndex.value = i++;
+  }
+
+  void isCurrentSelected(String val) {
+    selected.value = val;
+  }
+
+  Future<void> imagePickerFromCamera({String? currentProjectId}) async {
     try {
+      // Picking Image From Camera
       final imagePicker = ImagePicker();
       final image = await imagePicker.pickImage(
           source: ImageSource.camera, imageQuality: 50);
+
+      // If Pick Nothing return null
       if (image == null) return;
 
+      // Set Image Path
       final originalFile = File(image.path);
-
       final appDir = await getApplicationDocumentsDirectory();
-      final targetPath = path.join(appDir.path, '$currentProjectUID.jpg');
+      final targetPath = path.join(appDir.path,
+          '${currentProjectUID.isEmpty ? currentProjectId : currentProjectUID}.jpg');
 
       try {
         final copiedFile = await originalFile.copy(targetPath);
@@ -92,7 +99,7 @@ class HomeController extends GlobalController {
         //   });
         //   update();
         // }
-        updateProject(cover: photo);
+        updateProject(cover: photo, currentProjectId: currentProjectId);
         update();
       } catch (e) {
         log('Error copying image: $e');
@@ -102,7 +109,7 @@ class HomeController extends GlobalController {
     }
   }
 
-  Future<void> imagePickerFromGallery() async {
+  Future<void> imagePickerFromGallery({String? currentProjectId}) async {
     try {
       final imagePicker = ImagePicker();
       final image = await imagePicker.pickImage(source: ImageSource.gallery);
@@ -116,7 +123,7 @@ class HomeController extends GlobalController {
       try {
         final copiedFile = await originalFile.copy(targetPath);
         photo = copiedFile;
-        updateProject(cover: photo);
+        updateProject(cover: photo, currentProjectId: currentProjectId);
         update();
       } catch (e) {
         log('Error copying image: $e');

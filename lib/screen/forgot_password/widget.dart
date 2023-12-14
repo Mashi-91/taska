@@ -18,13 +18,14 @@ Widget topSection() {
         ),
       ),
       const SizedBox(height: 24),
-      SizedBox(
-          width: 200,
-          child: Text(
-            "Enter your email address for reset password!",
-            style: TextStyle(height: 1.2, color: lightBlack),
-            textAlign: TextAlign.center,
-          ))
+      const SizedBox(
+        width: 200,
+        child: Text(
+          "Enter your email address for reset password!",
+          style: TextStyle(height: 1.2, color: ColorsUtil.lightBlack),
+          textAlign: TextAlign.center,
+        ),
+      )
     ],
   );
 }

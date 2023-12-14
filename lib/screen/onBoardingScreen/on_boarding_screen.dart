@@ -2,7 +2,7 @@ import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:taska/constant/global_text.dart';
+import 'package:taska/constant/global_function.dart';
 import 'package:taska/screen/onBoardingScreen/widget/widget.dart';
 
 import '../../constant/tokens.dart';
@@ -38,19 +38,19 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   CustomPageView(
                     size: size,
                     title: 'Organize Your Tasks & Projects Easily',
-                    description: splashScreenPage1Description,
+                    description: GlobalFunction.splashScreenPage1Description,
                     imgPath: 'calendar-icon.png',
                   ),
                   CustomPageView(
                     size: size,
                     title: 'Always Connect with Team Anytime Anywhere',
-                    description: splashScreenPage1Description,
+                    description: GlobalFunction.splashScreenPage1Description,
                     imgPath: 'message-icon.png',
                   ),
                   CustomPageView(
                     size: size,
                     title: 'Everything You Can Do in the App',
-                    description: splashScreenPage1Description,
+                    description: GlobalFunction.splashScreenPage1Description,
                     imgPath: 'manage-icon.png',
                   ),
                 ],
@@ -65,7 +65,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
               flex: 1,
               child: Column(
                 children: [
-                  CustomButton(
+                  Utils.buildCustomButton(
                       isEnable: true,
                       buttonText: 'Next',
                       func: () async {
@@ -75,7 +75,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                         });
                       }),
                   const SizedBox(height: 12),
-                  CustomButton(
+                  Utils.buildCustomButton(
                     buttonText: 'Skip',
                     isSkip: true,
                     isEnable: true,

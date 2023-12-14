@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:taska/constant/utils.dart';
+import 'package:taska/routes/appRoutes.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -8,13 +10,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: customAppbar(title: 'Profile Screen', actions: [
-        iconButton(
-            icon: const Icon(Icons.logout,color: Colors.black,),
-            onTap: () {
-              FirebaseAuth.instance.signOut();
-            }),
-      ]),
+      appBar: Utils.customAppbarForProjectScreen(title: ''),
     );
   }
 }

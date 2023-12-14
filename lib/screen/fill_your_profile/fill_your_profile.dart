@@ -4,7 +4,6 @@ import 'package:fl_country_code_picker/fl_country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:taska/constant/snackBar.dart';
 import 'package:taska/model/fill_profile_model.dart';
 import 'package:taska/screen/fill_your_profile/widget.dart';
 
@@ -24,7 +23,7 @@ class _FillYourProfileState extends State<FillYourProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: customAppbar(title: 'Fill Your Profile'),
+      appBar: Utils.customAppbar(title: 'Fill Your Profile'),
       body: Obx(
         () => SingleChildScrollView(
           child: Padding(
@@ -63,7 +62,7 @@ class _FillYourProfileState extends State<FillYourProfile> {
                   controller: controller.roleController,
                 ),
                 const SizedBox(height: 40),
-                CustomButton(
+                Utils.buildCustomButton(
                   buttonText: 'Continue',
                   isEnable: controller.isEnabled.value,
                   func: () async {

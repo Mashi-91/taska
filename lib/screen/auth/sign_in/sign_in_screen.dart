@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taska/constant/color.dart';
-import 'package:taska/constant/global_function.dart';
-import 'package:taska/constant/snackBar.dart';
 import 'package:taska/screen/auth/sign_in/sign_in_widget.dart';
 
 import '../../../constant/utils.dart';
@@ -39,7 +37,7 @@ class SignInScreen extends StatelessWidget {
                   controller: controller,
                 ),
                 SizedBox(height: Get.height * 0.03),
-                CustomButton(
+                Utils.buildCustomButton(
                   buttonText: 'Sign in',
                   isEnable: controller.isSignButtonEnable.value,
                   func: () {
@@ -56,7 +54,7 @@ class SignInScreen extends StatelessWidget {
                   },
                   child: const Text(
                     "Forgot the password?",
-                    style: TextStyle(color: primaryColor),
+                    style: TextStyle(color: ColorsUtil.primaryColor),
                   ),
                 ),
                 SizedBox(height: Get.height * 0.06),
@@ -76,7 +74,7 @@ class SignInScreen extends StatelessWidget {
                       },
                       child: const Text("Sign up",
                           style: TextStyle(
-                            color: primaryColor,
+                            color: ColorsUtil.primaryColor,
                             fontWeight: FontWeight.bold,
                           )),
                     )
