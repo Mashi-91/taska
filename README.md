@@ -1,39 +1,38 @@
-# Taska
+# Taska Task & Project Management App
 
-A Flutter Project for Task Management.
-
-## Overview
-
-Taska is a mobile application developed using Flutter, a framework for building natively compiled applications for mobile, web, and desktop from a single codebase. The app is designed to help users manage their tasks efficiently and stay organized.
+The Taska app UI Kit is a comprehensive Flutter UI kit designed explicitly for task and project management purposes. It offers a wide array of components and screens tailored to streamline project organization, task assignment, and productivity enhancement.
 
 ## Features
 
-- **Task Creation:** Easily create and organize tasks with a simple and intuitive interface.
-
-- **Prioritization:** Prioritize your tasks to focus on what matters the most.
-
-- **Due Dates:** Set due dates for tasks to stay on track and meet deadlines.
-
-- **Categories:** Categorize tasks to manage different aspects of your life or work.
-
-- **Reminders:** Receive reminders for upcoming tasks to ensure nothing is overlooked.
-
-## Getting Started
-
-To get started with Taska, follow these steps:
-
-1. Clone the repository to your local machine.
-2. Open the project in your preferred Flutter development environment.
-3. Run the app on your emulator or physical device.
-
-For more detailed instructions on Flutter development, refer to the [official documentation](https://docs.flutter.dev/).
-
-Feel free to explore and contribute to make Taska even better!
+- **Streamlined Task Management:** Taska simplifies task handling by providing an array of intuitive tools and features. From task creation to assignment and tracking, it offers a seamless experience.
+  
+- **Project Organization:** Effortlessly manage projects with a user-friendly interface. Categorize tasks, allocate resources, and monitor project progress efficiently.
+  
+- **Collaborative Environment:** Foster collaboration among team members. Taska facilitates communication, file sharing, and feedback mechanisms to ensure seamless teamwork.
+  
+- **Customizable Components:** The UI kit comprises customizable components, allowing developers to personalize the app according to specific project needs easily.
 
 ## Screenshots
 
-*Add your app screenshots here.*
+<div align="center">
+  <img src="screenshots/screenshot1.jpg" width="200" alt="Screenshot 1">
+  <img src="screenshots/screenshot2.jpg" width="200" alt="Screenshot 2">
+  <img src="screenshots/screenshot3.jpg" width="200" alt="Screenshot 3">
+</div>
 
-## License
+<div align="center">
+  <img src="screenshots/screenshot4.jpg" width="200" alt="Screenshot 4">
+  <img src="screenshots/screenshot5.jpg" width="200" alt="Screenshot 5">
+  <img src="screenshots/screenshot6.jpg" width="200" alt="Screenshot 6">
+</div>
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+<div align="center">
+  <img src="screenshots/screenshot7.jpg" width="200" alt="Screenshot 7">
+  <img src="screenshots/screenshot8.jpg" width="200" alt="Screenshot 8">
+  <img src="screenshots/screenshot9.jpg" width="200" alt="Screenshot 9">
+</div>
+
+<div align="center">
+  <img src="screenshots/screenshot10.jpg" width="200" alt="Screenshot 10">
+  <!-- Additional screenshots can be added as needed -->
+</div>
