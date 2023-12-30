@@ -10,9 +10,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:taska/constant/color.dart';
 import 'package:taska/constant/global_function.dart';
 import 'package:taska/constant/utils.dart';
+import 'package:taska/model/project_model.dart';
 import 'package:taska/model/task_model.dart';
 import 'package:taska/routes/appRoutes.dart';
 import 'package:taska/screen/navigation_tabs/home/homeController.dart';
@@ -25,7 +27,7 @@ class CreateProjectScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(CreateProjectController());
-    final data = Get.arguments;
+    final ProjectModel data = Get.arguments;
     return Scaffold(
       appBar: Utils.customAppbar(
         backgroundColor: Colors.transparent,
@@ -67,7 +69,7 @@ class CreateProjectScreen extends StatelessWidget {
                         buttonText: 'Yes, Delete',
                         func: () async {
                           controller
-                              .deleteProject(uid: data['id'], context: context)
+                              .deleteProject(uid: data.id, context: context)
                               .then((value) => Get.back());
                         },
                         isEnable: true,
@@ -125,7 +127,7 @@ class CreateProjectScreen extends StatelessWidget {
         stream: controller.userCollection
             .doc(controller.currentUser?.uid)
             .collection('Projects')
-            .doc(data['id'])
+            .doc(data.id)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -146,7 +148,8 @@ class CreateProjectScreen extends StatelessWidget {
               ),
             );
           } else if (snapshot.hasData && snapshot.data != null) {
-            final project = snapshot.data?.data();
+            final ProjectModel project =
+            ProjectModel.fromJson(snapshot.data!.data()!);
             if (project != null) {
               controller.setProjectData(project);
               return Column(
@@ -199,7 +202,7 @@ class CreateProjectScreen extends StatelessWidget {
                     await controller.storeTask(
                       taskModel: TaskModel(
                         title: controller.taskNameController.text,
-                        projectId: data['uid'],
+                        projectId: data.id,
                         isDone: false,
                         time: DateTime.now(),
                       ),
@@ -247,7 +250,7 @@ class CreateProjectScreen extends StatelessWidget {
   }
 
   Widget buildProjectDetailSection(
-      {required Map<String, dynamic> project, required BuildContext context}) {
+      {required ProjectModel project, required BuildContext context}) {
     final controller = Get.find<CreateProjectController>();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18).copyWith(top: 14),
@@ -257,7 +260,7 @@ class CreateProjectScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${project['title']}',
+            project.title,
             style: const TextStyle(
                 fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 0.8),
           ),
@@ -266,48 +269,57 @@ class CreateProjectScreen extends StatelessWidget {
             style: TextStyle(fontSize: 12, color: ColorsUtil.lightBlack),
           ),
           const SizedBox(height: 12),
-          controller.selectedDate!.isEmpty
+          project.projectDeadLine == '' ||
+              project.projectDeadLine == null
+          // controller.memoryDateTime == null
               ? Utils.buildCustomOutlineButton(
-                  width: double.infinity,
-                  height: 46,
-                  addIcon: false,
-                  isEnable: true,
-                  borderWidth: 2,
-                  buttonText: 'Set Deadline Project',
-                  func: () {
-                    customBottomSheet(
-                      controller,
-                      context,
-                      bottomPadding: 0,
-                      title: 'Set Deadline Project',
-                      content: Container(
-                        decoration: BoxDecoration(
-                          color: ColorsUtil.lightGrey.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: CalendarDatePicker2(
-                          config: CalendarDatePicker2Config(
-                            selectedDayHighlightColor: ColorsUtil.primaryColor,
-                          ),
-                          value: [DateTime.now()],
-                          onValueChanged: (val) {
-                            if (val != null) {
-                              String formattedDate =
-                                  DateFormat('MMM d yyyy').format(val[0]!);
-                              controller.setSelectedDate(formattedDate);
-                              log(controller.selectedDate.toString());
-                            }
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                )
-              : buildProgressSection(
-                  leftTask: '1',
-                  totalTask: '',
-                  deadLine: controller.selectedDate.toString(),
+            width: double.infinity,
+            height: 46,
+            addIcon: false,
+            isEnable: true,
+            borderWidth: 2,
+            buttonText: 'Set Deadline Project',
+            func: () {
+              customBottomSheet(
+                controller,
+                context,
+                bottomPadding: 0,
+                title: 'Set Deadline Project',
+                content: Container(
+                  decoration: BoxDecoration(
+                    color: ColorsUtil.lightGrey
+                        .withOpacity(0.1),
+                    borderRadius:
+                    BorderRadius.circular(20),
+                  ),
+                  child: SfDateRangePicker(
+                    initialDisplayDate:
+                    DateTime.now(),
+                    minDate: DateTime.now(),
+                    onSelectionChanged: (val) {
+                      if (val != null) {
+                        controller
+                            .setProjectDeadline(
+                          projectId: project.id,
+                          dateFromDatePicker:
+                          val.value,
+                        );
+                        Get.back();
+                      }
+                    },
+                  ),
                 ),
+              );
+            },
+          )
+              : buildProgressSection(
+            leftTask: '1',
+            totalTask: 'taskDocs.length.toString()',
+            deadLine: project.projectDeadLine == ''
+                ? project.projectDeadLine.toString()
+                : controller.memoryDateTime
+                .toString(),
+          ),
           // task!.isNotEmpty
           //     ? Expanded(
           //         child: ListView.builder(

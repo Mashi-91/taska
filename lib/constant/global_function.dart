@@ -1,6 +1,9 @@
 //<<<<<<<<<<<<<< GlobalFunction >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class GlobalFunction {
   static phoneFormat(String enterPhoneNumber) {
@@ -59,6 +62,28 @@ class GlobalFunction {
     return '#${primaryColorValue.toRadixString(16).padLeft(8, '0').substring(2)}'
         .toLowerCase();
   }
+
+  static int calculateDaysLeft(String deadLine) {
+    DateTime deadlineDate;
+    int daysLeft = 0;
+
+    if (deadLine.isNotEmpty) {
+      try {
+        deadlineDate = DateFormat('yyyy-MM-dd').parse(deadLine);
+
+        DateTime now = DateTime.now();
+        Duration difference = deadlineDate.difference(now);
+        daysLeft = difference.inDays;
+      } catch (e) {
+        log('Error parsing deadline: $e');
+      }
+    } else {
+      log('Deadline is empty');
+    }
+
+    return daysLeft;
+  }
+
 
   static String splashScreenPage1Description =
       'Organizing tasks and projects is essential for maintaining productivity, meeting deadlines, and reducing stress.';

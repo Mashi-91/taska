@@ -1,16 +1,15 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:taska/constant/color.dart';
 import 'package:taska/constant/utils.dart';
+import 'package:taska/model/project_model.dart';
 import 'package:taska/routes/appRoutes.dart';
 import 'package:taska/screen/navigation_tabs/home/homeController.dart';
-import 'package:taska/screen/navigation_tabs/home/widget.dart';
 
 import '../project/widget.dart';
 
@@ -58,30 +57,28 @@ class SeeAll extends StatelessWidget {
         body: StreamBuilder(
           stream: controller.getAllProjects(),
           builder: (context, snapshot) {
-            final data = snapshot.data?.docs;
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
                 child: LoadingAnimationWidget.stretchedDots(
                     color: ColorsUtil.primaryColor, size: 40),
               );
-            }
-            if (snapshot.hasData) {
+            } else if (!snapshot.hasData) {
+              return const Center(child: Text('Error...'));
+            } else if (snapshot.hasData) {
+              final List<ProjectModel> data =
+                  ProjectModel.fromDocumentSnapshots(snapshot.data!);
+              // Check for empty list and display message:
+              if (data == null || data.isEmpty) {
+                return const Center(child: Text('No Projects Found'));
+              }
+
               return ListView.builder(
-                itemCount: data?.length ?? 0,
+                itemCount: data.length,
                 itemBuilder: (context, i) {
-                  if (data == null || data.isEmpty) {
-                    return const Center(child: Text('No Data Found'));
-                  }
-                  final projectData = data?[i].data();
-
-                  if (projectData == null || projectData.isEmpty) {
-                    return const SizedBox
-                        .shrink(); // Handle the case when projectData is null or empty
-                  }
-
-                  final title = projectData['title'] ?? '';
+                  final projectData = data[i];
+                  final title = projectData.title;
                   final tag = title;
-                  final cover = projectData['cover'] ?? '';
+                  final cover = projectData.cover ?? '';
 
                   return controller.isCover.value
                       ? Material(
@@ -92,9 +89,9 @@ class SeeAll extends StatelessWidget {
                             subTitle: 'subTitle',
                             onTapOption: () => Get.toNamed(
                                 AppRoutes.projectDetail,
-                                arguments: data[i].data()),
+                                arguments: data[i]),
                             timeLeft: '1',
-                            totalTask: data!.length.toString(),
+                            totalTask: data.length.toString(),
                             dateLeft: '',
                             leftTask: '',
                           ),
@@ -107,16 +104,17 @@ class SeeAll extends StatelessWidget {
                                 horizontal: 16,
                                 vertical: 14,
                               ),
-                              imageProvider: projectData['cover'] != '' &&
-                                      projectData['cover'] != null
+                              imageProvider: projectData.cover != '' &&
+                                      projectData.cover != null
                                   ? CachedNetworkImageProvider(
                                       Uri.parse(cover).toString())
-                                  : AssetImage(projectData['backgroundCover']),
+                                  : AssetImage(
+                                      projectData.backgroundCover.toString()),
                               title: title,
                               subTitle: 'subTitle',
                               onTapOption: () => Get.toNamed(
                                   AppRoutes.projectDetail,
-                                  arguments: data[i].data()),
+                                  arguments: data[i]),
                               leftTask: '1',
                               totalTask: '1',
                               dateLeft: '',

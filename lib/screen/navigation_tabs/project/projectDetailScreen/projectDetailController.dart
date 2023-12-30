@@ -13,8 +13,8 @@ import 'package:taska/screen/global_controller.dart';
 class ProjectDetailController extends GlobalController {
   late final TextEditingController taskNameController;
   File? photo;
-  String? projectDeadLine;
   Color? selectedColor;
+  String? memoryDateTime;
 
   // Function to set the selected color
   void setSelectedColor(Color color) {
@@ -34,24 +34,17 @@ class ProjectDetailController extends GlobalController {
     taskNameController.dispose();
   }
 
-  Future<void> setProjectDeadline(DateTime selectedDate) async {
+  Future<void> setProjectDeadline(
+      {required String projectId, required dateFromDatePicker}) async {
     try {
-      final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
-      projectDeadLine = formattedDate;
-
-      // Update the project with the deadline
-      // Replace the code below with your logic to update the project's deadline
-      // For example, you might want to call an update function from your repository or Firestore
-      // await projectRepository.updateProjectDeadline(currentProjectId, formattedDate);
-      // or
-      // await userCollection
-      //     .doc(currentUser?.uid)
-      //     .collection('projects')
-      //     .doc(currentProjectUID)
-      //     .update({
-      //   'deadline': formattedDate,
-      // });
-
+      final projectDeadLine = DateFormat('yyyy-MM-dd').format(
+          DateFormat('yyyy-MM-dd').parse(dateFromDatePicker.toString()));
+      updateFieldFromFirebase(
+        currentProjectId: projectId,
+        updateField: projectDeadLine,
+        firebaseFiledName: 'projectDeadLine',
+      );
+      memoryDateTime = projectDeadLine;
       update(); // Update the UI if necessary
     } catch (e) {
       log('Error setting project deadline: $e');

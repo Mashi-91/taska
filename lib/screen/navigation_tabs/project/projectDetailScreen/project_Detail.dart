@@ -10,7 +10,9 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:taska/constant/global_function.dart';
+import 'package:taska/model/project_model.dart';
 import 'package:taska/routes/appRoutes.dart';
 import 'package:taska/screen/navigation_tabs/home/homeController.dart';
 import 'package:taska/screen/navigation_tabs/project/projectDetailScreen/projectDetailController.dart';
@@ -25,7 +27,7 @@ class ProjectDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = Get.arguments ?? '';
+    final ProjectModel data = Get.arguments ?? '';
     final controller = Get.put(ProjectDetailController());
     final homeController = Get.find<HomeController>();
     return Scaffold(
@@ -69,7 +71,7 @@ class ProjectDetail extends StatelessWidget {
                         buttonText: 'Yes, Delete',
                         func: () async {
                           controller
-                              .deleteProject(uid: data['id'], context: context)
+                              .deleteProject(uid: data.id, context: context)
                               .then((value) => Get.back());
                         },
                         isEnable: true,
@@ -131,11 +133,11 @@ class ProjectDetail extends StatelessWidget {
           children: [
             Flexible(
               child: Hero(
-                tag: homeController.isCover.value ? '' : data['title'],
+                tag: homeController.isCover.value ? '' : data.title,
                 child: Material(
                   child: FutureBuilder(
-                    future: data['cover'] != ''
-                        ? controller.getCoverImageUrl(data['id'])
+                    future: data.cover != ''
+                        ? controller.getCoverImageUrl(data.id)
                         : Future.delayed(const Duration(milliseconds: 100)),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -148,7 +150,7 @@ class ProjectDetail extends StatelessWidget {
                       }
 
                       if (snapshot.hasData && snapshot.data != null) {
-                        final cover = data['cover'];
+                        final cover = data.cover;
 
                         return Container(
                           decoration: BoxDecoration(
@@ -158,9 +160,10 @@ class ProjectDetail extends StatelessWidget {
                                       controller.photo!) // Show picked image
                                   : cover != ''
                                       ? CachedNetworkImageProvider(
-                                          Uri.parse(cover).toString(),
+                                          Uri.parse(cover!).toString(),
                                         ) // Show cover image
-                                      : AssetImage(data['backgroundCover'])
+                                      : AssetImage(
+                                              data.backgroundCover.toString())
                                           as ImageProvider,
                               // Show background cover
                               fit: BoxFit.cover,
@@ -171,7 +174,7 @@ class ProjectDetail extends StatelessWidget {
                       return Container(
                         decoration: BoxDecoration(
                           image: DecorationImage(
-                            image: AssetImage(data['backgroundCover']),
+                            image: AssetImage(data.backgroundCover.toString()),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -189,7 +192,7 @@ class ProjectDetail extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 color: Colors.white,
                 child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                  stream: controller.getAllTaskAsStream(data['id']),
+                  stream: controller.getAllTaskAsStream(data.id),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
@@ -207,7 +210,7 @@ class ProjectDetail extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${data['title']}',
+                            data.title,
                             style: const TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -225,50 +228,63 @@ class ProjectDetail extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           // Adjust as needed
-                          Utils.buildCustomOutlineButton(
-                            width: double.infinity,
-                            height: 46,
-                            addIcon: false,
-                            isEnable: true,
-                            borderWidth: 2,
-                            buttonText: 'Set Deadline Project',
-                            func: () {
-                              customBottomSheet(
-                                controller,
-                                context,
-                                bottomPadding: 0,
-                                title: 'Set Deadline Project',
-                                content: Container(
-                                  decoration: BoxDecoration(
-                                    color:
-                                        ColorsUtil.lightGrey.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: CalendarDatePicker2(
-                                    config: CalendarDatePicker2Config(
-                                      selectedDayHighlightColor:
-                                          ColorsUtil.primaryColor,
-                                    ),
-                                    value: [DateTime.now()],
-                                    onValueChanged: (val) {
-                                      if (val != null) {
-                                        String formattedDate =
-                                            DateFormat('yyyy-MM-dd')
-                                                .format(val[0]!);
-                                        log(formattedDate.toString());
-                                      }
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
+                          GetBuilder<ProjectDetailController>(
+                            builder: (_) => Column(
+                              children: [
+                                data.projectDeadLine == '' ||
+                                        data.projectDeadLine == null
+                                        // controller.memoryDateTime == null
+                                    ? Utils.buildCustomOutlineButton(
+                                        width: double.infinity,
+                                        height: 46,
+                                        addIcon: false,
+                                        isEnable: true,
+                                        borderWidth: 2,
+                                        buttonText: 'Set Deadline Project',
+                                        func: () {
+                                          customBottomSheet(
+                                            controller,
+                                            context,
+                                            bottomPadding: 0,
+                                            title: 'Set Deadline Project',
+                                            content: Container(
+                                              decoration: BoxDecoration(
+                                                color: ColorsUtil.lightGrey
+                                                    .withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: SfDateRangePicker(
+                                                initialDisplayDate:
+                                                    DateTime.now(),
+                                                minDate: DateTime.now(),
+                                                onSelectionChanged: (val) {
+                                                  if (val != null) {
+                                                    controller
+                                                        .setProjectDeadline(
+                                                      projectId: data.id,
+                                                      dateFromDatePicker:
+                                                          val.value,
+                                                    );
+                                                    Get.back();
+                                                  }
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    : buildProgressSection(
+                                        leftTask: '1',
+                                        totalTask: taskDocs.length.toString(),
+                                        deadLine: data.projectDeadLine == ''
+                                            ? data.projectDeadLine.toString()
+                                            : controller.memoryDateTime
+                                                .toString(),
+                                      ),
+                              ],
+                            ),
                           ),
-                          // buildProgressSection(
-                          //   leftTask: '1',
-                          //   totalTask: taskDocs.length.toString(),
-                          //   dateLeft: '13',
-                          //   timeLeft: 'Dec 23 2024',
-                          // ),
                           SizedBox(height: Get.height * 0.06),
                           if (taskDocs.isNotEmpty)
                             ListView.builder(
@@ -322,7 +338,7 @@ class ProjectDetail extends StatelessWidget {
                     await controller.storeTask(
                       taskModel: TaskModel(
                         title: controller.taskNameController.text,
-                        projectId: data['id'],
+                        projectId: data.id,
                         isDone: false,
                         time: DateTime.now(),
                       ),

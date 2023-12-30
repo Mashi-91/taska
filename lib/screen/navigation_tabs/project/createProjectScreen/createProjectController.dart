@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:taska/screen/global_controller.dart';
@@ -15,7 +16,7 @@ class CreateProjectController extends GlobalController {
   late final TextEditingController taskNameController;
   File? photo;
   Color? selectedColor;
-  String? selectedDate;
+  String? memoryDateTime;
 
   void setProjectData(dynamic data) {
     projectData.value = data;
@@ -27,10 +28,27 @@ class CreateProjectController extends GlobalController {
     update();
   }
 
-  // Function to set the selected date
-  void setSelectedDate(String date) {
-    selectedDate = date;
-    update();
+  // // Function to set the selected date
+  // void setSelectedDate(String date) {
+  //   selectedDate = date;
+  //   update();
+  // }
+
+  Future<void> setProjectDeadline(
+      {required String projectId, required dateFromDatePicker}) async {
+    try {
+      final projectDeadLine = DateFormat('yyyy-MM-dd').format(
+          DateFormat('yyyy-MM-dd').parse(dateFromDatePicker.toString()));
+      updateFieldFromFirebase(
+        currentProjectId: projectId,
+        updateField: projectDeadLine,
+        firebaseFiledName: 'projectDeadLine',
+      );
+      memoryDateTime = projectDeadLine;
+      update(); // Update the UI if necessary
+    } catch (e) {
+      log('Error setting project deadline: $e');
+    }
   }
 
   @override

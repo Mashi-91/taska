@@ -347,13 +347,14 @@ class GlobalController extends GetxController {
         cover: '',
         backgroundCover: backgroundImg,
         projectColor: projectColor,
-      ).toJson();
+        projectDeadLine: '',
+      );
 
       await userCollection
           .doc(currentUser?.uid)
           .collection('Projects')
           .doc(uid)
-          .set(map)
+          .set(map.toJson())
           .then((value) async {
         Get.back(); // Close the loading indicator
         Get.back(); // Close the bottom sheet
@@ -517,6 +518,20 @@ class GlobalController extends GetxController {
     return null;
   }
 
+  Future<QuerySnapshot<Map<String, dynamic>>>? getAllProjectsByFuture() {
+    try {
+      final user = userCollection
+          .doc(currentUser?.uid)
+          .collection('Projects')
+          .orderBy('id', descending: true)
+          .get();
+      return user;
+    } on FirebaseFirestore catch (e) {
+      log('While getting all projects: $e');
+    }
+    return null;
+  }
+
   Stream<QuerySnapshot<Map<String, dynamic>>> getAllTaskAsStream(
       String projectId) {
     try {
@@ -610,6 +625,8 @@ class GlobalController extends GetxController {
     return staticColors[random.nextInt(staticColors.length)];
   }
 
+  // ************************* Update Section *********************************
+
   // Function to update color in Firebase
   void updateColorInFirebase(
       String currentProjectId, MaterialColor color) async {
@@ -620,6 +637,27 @@ class GlobalController extends GetxController {
           .doc(currentProjectId)
           .update({
         'projectColor': GlobalFunction.convertMaterialColorToHex(color)
+      });
+      Logger().i('Color updated successfully in Firebase!');
+    } catch (e, stackTrace) {
+      Logger().e('Error updating color in Firebase: $e',
+          error: e, stackTrace: stackTrace);
+      // Handle the error as needed, such as displaying an error message or logging
+    }
+  }
+
+  Future<void> updateFieldFromFirebase({
+    required String currentProjectId,
+    required String updateField,
+    required String firebaseFiledName,
+  }) async {
+    try {
+      await userCollection
+          .doc(currentUser?.uid)
+          .collection('Projects')
+          .doc(currentProjectId)
+          .update({
+        firebaseFiledName: updateField,
       });
       Logger().i('Color updated successfully in Firebase!');
     } catch (e, stackTrace) {

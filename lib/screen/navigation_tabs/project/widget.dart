@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:taska/constant/global_function.dart';
 
 import '../../../constant/color.dart';
 import '../../../constant/utils.dart';
@@ -63,15 +64,8 @@ buildProgressSection(
     {required String totalTask,
     required String leftTask,
     required String deadLine}) {
-  // final daysLeft = Utils.calculateDaysLeft(DateTime(deadLine));
-  DateTime deadlineDate = DateFormat('MMM dd yyyy').parse(deadLine);
+  final daysLeft = GlobalFunction.calculateDaysLeft(deadLine);
 
-  DateTime now = DateTime.now();
-
-  Duration difference = deadlineDate.difference(now);
-  // log(difference.inDays.toString());
-  // int daysLeft = Utils.calculateDaysLeftUntilDeadline(deadLine);
-  // log(daysLeft.toString());
   return Column(
     children: [
       Row(
@@ -96,7 +90,7 @@ buildProgressSection(
             ),
           ),
           Text(
-            ' Days Left, $deadLine',
+            'Days Left, $daysLeft',
             style: const TextStyle(fontSize: 10, color: Colors.grey),
           )
         ],

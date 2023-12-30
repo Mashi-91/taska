@@ -2,13 +2,13 @@ import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:taska/constant/color.dart';
+import 'package:taska/model/project_model.dart';
 import 'package:taska/routes/appRoutes.dart';
 import 'package:taska/screen/navigation_tabs/home/widget.dart';
 
@@ -31,9 +31,13 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await controller.getAllProjectsByFuture();
+        },
+        color: ColorsUtil.primaryColor,
+        child: ListView(
+          shrinkWrap: true,
           children: [
             Padding(
               padding:
@@ -77,9 +81,9 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             SizedBox(
-              height: 280,
-              child: StreamBuilder(
-                  stream: controller.getAllProjects(),
+              height: Get.height * 0.36,
+              child: FutureBuilder(
+                  future: controller.getAllProjectsByFuture(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
@@ -87,25 +91,27 @@ class HomeScreen extends StatelessWidget {
                             color: ColorsUtil.primaryColor, size: 20),
                       );
                     } else if (snapshot.hasData) {
-                      final List<QueryDocumentSnapshot>? project =
-                          snapshot.data?.docs;
+                      final List<ProjectModel> project =
+                          ProjectModel.fromDocumentSnapshots(snapshot.data!);
+
                       return project == null || project.isEmpty
                           ? SvgPicture.asset('assets/images/Empty-img.svg')
                           : CarouselSlider.builder(
                               itemCount: project.take(2).length,
                               itemBuilder: (_, i, val) {
                                 return projectCardWithImg(
-                                  imageProvider: project[i]['cover'] != ''
+                                  imageProvider: project[i].cover != ''
                                       ? CachedNetworkImageProvider(
-                                          Uri.parse(project[i]['cover'])
+                                          Uri.parse(project[i].cover!)
                                               .toString())
-                                      : AssetImage(
-                                          project[i]['backgroundCover']),
-                                  title: project[i]['title'] ?? '',
+                                      : AssetImage(project[i]
+                                          .backgroundCover
+                                          .toString()),
+                                  title: project[i].title,
                                   subTitle: 'subTitle',
                                   onTapOption: () {
                                     Get.toNamed(AppRoutes.projectDetail,
-                                        arguments: project[i].data());
+                                        arguments: project[i]);
                                   },
                                   leftTask: '1',
                                   totalTask: '',
@@ -154,19 +160,19 @@ class HomeScreen extends StatelessWidget {
                   SizedBox(
                     height: 200,
                     child: /*GetX<GlobalController>(
-                      init: Get.put(GlobalController()),
-                      builder: (GlobalController globalController) {
-                        return ListView.builder(itemBuilder: (_, i) {
-                          return taskTile(
-                              taskModel: TodayTaskModel(
-                                  title: globalController.taskData[i].title,
-                                  id:
-                                      globalController.taskData[i].dateCreated,
-                                  isDone:
-                                      globalController.taskData[i].isDone));
-                        });
-                      },
-                    )*/
+                        init: Get.put(GlobalController()),
+                        builder: (GlobalController globalController) {
+                          return ListView.builder(itemBuilder: (_, i) {
+                            return taskTile(
+                                taskModel: TodayTaskModel(
+                                    title: globalController.taskData[i].title,
+                                    id:
+                                        globalController.taskData[i].dateCreated,
+                                    isDone:
+                                        globalController.taskData[i].isDone));
+                          });
+                        },
+                      )*/
                         SvgPicture.asset('assets/images/Empty-img.svg'),
                   )
                 ],

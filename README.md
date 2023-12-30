@@ -15,24 +15,41 @@ The Taska app UI Kit is a comprehensive Flutter UI kit designed explicitly for t
 ## Screenshots
 
 <div align="center">
-  <img src="screenshots/screenshot1.jpg" width="200" alt="Screenshot 1">
-  <img src="screenshots/screenshot2.jpg" width="200" alt="Screenshot 2">
-  <img src="screenshots/screenshot3.jpg" width="200" alt="Screenshot 3">
+  <img src="screenshots/screenshot-1.png" width="200" alt="Screenshot 1">
+  <img src="screenshots/screenshot-2.png" width="200" alt="Screenshot 2">
+  <img src="screenshots/screenshot-3.png" width="200" alt="Screenshot 3">
 </div>
 
 <div align="center">
-  <img src="screenshots/screenshot4.jpg" width="200" alt="Screenshot 4">
-  <img src="screenshots/screenshot5.jpg" width="200" alt="Screenshot 5">
-  <img src="screenshots/screenshot6.jpg" width="200" alt="Screenshot 6">
+  <img src="screenshots/screenshot-4.png" width="200" alt="Screenshot 4">
+  <img src="screenshots/screenshot-5.png" width="200" alt="Screenshot 5">
+  <img src="screenshots/screenshot-6.png" width="200" alt="Screenshot 6">
 </div>
 
 <div align="center">
-  <img src="screenshots/screenshot7.jpg" width="200" alt="Screenshot 7">
-  <img src="screenshots/screenshot8.jpg" width="200" alt="Screenshot 8">
-  <img src="screenshots/screenshot9.jpg" width="200" alt="Screenshot 9">
+  <img src="screenshots/screenshot-7.png" width="200" alt="Screenshot 7">
+  <img src="screenshots/screenshot-8.png" width="200" alt="Screenshot 8">
+  <img src="screenshots/screenshot-9.png" width="200" alt="Screenshot 9">
 </div>
 
 <div align="center">
-  <img src="screenshots/screenshot10.jpg" width="200" alt="Screenshot 10">
-  <!-- Additional screenshots can be added as needed -->
+  <img src="screenshots/screenshot-10.png" width="200" alt="Screenshot 10">
+</div>
+
+<div align="center">
+  <img src="screenshots/screenshot-11.png" width="200" alt="Screenshot 11">
+  <img src="screenshots/screenshot-12.png" width="200" alt="Screenshot 12">
+  <img src="screenshots/screenshot-13.png" width="200" alt="Screenshot 13">
+</div>
+
+<div align="center">
+  <img src="screenshots/screenshot-14.png" width="200" alt="Screenshot 14">
+  <img src="screenshots/screenshot-15.png" width="200" alt="Screenshot 15">
+  <img src="screenshots/screenshot-16.png" width="200" alt="Screenshot 16">
+</div>
+
+<div align="center">
+  <img src="screenshots/screenshot-17.png" width="200" alt="Screenshot 17">
+  <img src="screenshots/screenshot-18.png" width="200" alt="Screenshot 18">
+  <img src="screenshots/screenshot-19.png" width="200" alt="Screenshot 19">
 </div>

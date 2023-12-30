@@ -27,6 +27,8 @@ dependencies:
   dots_indicator: ^3.0.0
   flutter_holo_date_picker: 1.1.0
   calendar_date_picker2: ^0.5.3
+  syncfusion_flutter_datepicker: ^24.1.41
+
   fl_country_code_picker: ^0.1.4
   pinput:
   carousel_slider:
@@ -40,6 +42,8 @@ dependencies:
   cloud_firestore:
   firebase_messaging:
   firebase_storage:
+
+
   multiple_stream_builder:
   connectivity:
   connectivity_plus:
@@ -52,7 +56,8 @@ dependencies:
   path_provider:
   http:
   logger:
-
+#  custom_refresh_indicator: ^3.0.0
+#  pull_to_refresh_flutter3: ^2.0.2
 
 
 dev_dependencies:
