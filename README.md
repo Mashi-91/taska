@@ -32,10 +32,7 @@ The Taska app UI Kit is a comprehensive Flutter UI kit designed explicitly for t
 [//]: # (  <img src="screenshots/screenshot-8.png" width="200" alt="Screenshot 8">)
 
   <img src="screenshots/screenshot-9.png" width="200" alt="Screenshot 9">
-</div>
-
-<div align="center">
-  <img src="screenshots/screenshot-10.png" width="200" alt="Screenshot 10">
+    <img src="screenshots/screenshot-10.png" width="200" alt="Screenshot 10">
 </div>
 
 <div align="center">
