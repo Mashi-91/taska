@@ -15,7 +15,7 @@ The Taska app UI Kit is a comprehensive Flutter UI kit designed explicitly for t
 ## Screenshots
 
 <div align="center">
-  <img src="screenshots/screenshot-1.png" width="200" alt="Screenshot 1">
+  <img src="screenshots/screenshot-1.png" alt="Screenshot 1">
   <img src="screenshots/screenshot-2.png" width="200" alt="Screenshot 2">
   <img src="screenshots/screenshot-3.png" width="200" alt="Screenshot 3">
 </div>
@@ -28,7 +28,9 @@ The Taska app UI Kit is a comprehensive Flutter UI kit designed explicitly for t
 
 <div align="center">
   <img src="screenshots/screenshot-7.png" width="200" alt="Screenshot 7">
-  <img src="screenshots/screenshot-8.png" width="200" alt="Screenshot 8">
+
+[//]: # (  <img src="screenshots/screenshot-8.png" width="200" alt="Screenshot 8">)
+
   <img src="screenshots/screenshot-9.png" width="200" alt="Screenshot 9">
 </div>
 
