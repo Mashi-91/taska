@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:taska/constant/color.dart';
 import 'package:taska/model/project_model.dart';
+import 'package:taska/model/task_model.dart';
 import 'package:taska/routes/appRoutes.dart';
 import 'package:taska/screen/navigation_tabs/home/widget.dart';
 
@@ -31,13 +32,9 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await controller.getAllProjectsByFuture();
-        },
-        color: ColorsUtil.primaryColor,
-        child: ListView(
-          shrinkWrap: true,
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
               padding:
@@ -82,61 +79,36 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 20),
             SizedBox(
               height: Get.height * 0.36,
-              child: FutureBuilder(
-                  future: controller.getAllProjectsByFuture(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: LoadingAnimationWidget.stretchedDots(
-                            color: ColorsUtil.primaryColor, size: 20),
-                      );
-                    } else if (snapshot.hasData) {
-                      final List<ProjectModel> project =
-                          ProjectModel.fromDocumentSnapshots(snapshot.data!);
-
-                      return project == null || project.isEmpty
-                          ? SvgPicture.asset('assets/images/Empty-img.svg')
-                          : CarouselSlider.builder(
-                              itemCount: project.take(2).length,
-                              itemBuilder: (_, i, val) {
-                                return projectCardWithImg(
-                                  imageProvider: project[i].cover != ''
-                                      ? CachedNetworkImageProvider(
-                                          Uri.parse(project[i].cover!)
-                                              .toString())
-                                      : AssetImage(project[i]
-                                          .backgroundCover
-                                          .toString()),
-                                  title: project[i].title,
-                                  subTitle: 'subTitle',
-                                  onTapOption: () {
-                                    Get.toNamed(AppRoutes.projectDetail,
-                                        arguments: project[i]);
-                                  },
-                                  leftTask: '1',
-                                  totalTask: '',
-                                  dateLeft: '',
-                                  timeLeft: '',
-                                );
-                              },
-                              options: CarouselOptions(
-                                height: Get.height * 0.34,
-                                viewportFraction: 0.93,
-                                enableInfiniteScroll: false,
-                                enlargeCenterPage: true,
-                                disableCenter: false,
-                              ),
-                            );
-                    }
+              child: StreamBuilder(
+                stream: controller.getAllProjects(),
+                builder: (context, projectSnapshot) {
+                  if (projectSnapshot.connectionState ==
+                      ConnectionState.waiting) {
                     return Center(
-                      child: Text('Error: ${snapshot.error}'),
+                      child: LoadingAnimationWidget.stretchedDots(
+                        color: ColorsUtil.primaryColor,
+                        size: 20,
+                      ),
                     );
-                  }),
+                  } else if (projectSnapshot.hasData) {
+                    final List<ProjectModel> projects =
+                        ProjectModel.fromDocumentSnapshots(
+                            projectSnapshot.data!);
+
+                    return projectListWidget(projects);
+                  } else {
+                    return Center(
+                      child: Text('Error: ${projectSnapshot.error}'),
+                    );
+                  }
+                },
+              ),
             ),
             const SizedBox(height: 18),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -158,28 +130,109 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                   SizedBox(
-                    height: 200,
-                    child: /*GetX<GlobalController>(
-                        init: Get.put(GlobalController()),
-                        builder: (GlobalController globalController) {
-                          return ListView.builder(itemBuilder: (_, i) {
-                            return taskTile(
-                                taskModel: TodayTaskModel(
-                                    title: globalController.taskData[i].title,
-                                    id:
-                                        globalController.taskData[i].dateCreated,
-                                    isDone:
-                                        globalController.taskData[i].isDone));
-                          });
-                        },
-                      )*/
-                        SvgPicture.asset('assets/images/Empty-img.svg'),
-                  )
+                    height: Get.height * 0.3,
+                    child: StreamBuilder(
+                      stream: controller.getAllTasksAsStreamOnHomeScreen(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                            child: LoadingAnimationWidget.stretchedDots(
+                              color: ColorsUtil.primaryColor,
+                              size: 20,
+                            ),
+                          );
+                        } else if (snapshot.hasData) {
+                          final List<TaskModel> taskList = snapshot.data!.docs
+                              .map((e) => TaskModel.fromDocumentSnapshot(e))
+                              .toList();
+
+                          // Task is not done
+                          final List<TaskModel> notDoneTasks =
+                              controller.filterNotDoneTasks(taskList);
+
+                          // Today Task
+                          final List<TaskModel> todayTasks =
+                              controller.filterTodayTasks(notDoneTasks);
+
+                          // store in controller
+                          controller.setHomeTaskList(taskList);
+                          if (todayTasks.isNotEmpty) {
+                            return ListView.builder(
+                              itemCount: todayTasks.length,
+                              itemBuilder: (_, index) {
+                                final task = todayTasks[index];
+                                return GetBuilder<HomeController>(
+                                  builder: (_) {
+                                    return taskTile(
+                                      taskModel: TaskModel(
+                                        title: task.title,
+                                        isDone: task.isDone,
+                                        projectId: '',
+                                        time: task.time,
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          } else {
+                            return SvgPicture.asset(
+                                'assets/images/Empty-img.svg');
+                          }
+                        } else if (snapshot.hasError) {
+                          return Center(
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        } else {
+                          return const SizedBox(); // Handle other cases
+                        }
+                      },
+                    ),
+                  ),
                 ],
               ),
             )
           ],
         ),
+      ),
+    );
+  }
+
+  Widget projectListWidget(List<ProjectModel> projects) {
+    final controller = Get.find<HomeController>();
+    return CarouselSlider.builder(
+      itemCount: projects.take(2).length,
+      itemBuilder: (_, i, val) {
+        final project = projects[i];
+        final List<TaskModel> totalTasks = controller.homeScreenTask;
+        final List<TaskModel> getProjectIdBasedTask =
+            controller.getTotalTasks(totalTasks, projects[i].id).toList();
+
+        return projectCardWithImg(
+          imageProvider: project.cover != ''
+              ? CachedNetworkImageProvider(Uri.parse(project.cover!).toString())
+              : AssetImage(project.backgroundCover.toString()),
+          title: project.title,
+          subTitle: 'subTitle',
+          onTapOption: () {
+            Get.toNamed(AppRoutes.projectDetail, arguments: project);
+          },
+          leftTask: controller
+              .filterNotDoneTasks(getProjectIdBasedTask)
+              .length
+              .toString(),
+          totalTask: getProjectIdBasedTask.length.toString(),
+          deadLine: project.projectDeadLine.toString(),
+          taskModel: getProjectIdBasedTask, // Pass tasks to projectCardWithImg
+        );
+      },
+      options: CarouselOptions(
+        height: Get.height * 0.34,
+        viewportFraction: 0.93,
+        enableInfiniteScroll: false,
+        enlargeCenterPage: true,
+        disableCenter: false,
       ),
     );
   }

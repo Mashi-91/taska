@@ -117,8 +117,7 @@ class SeeAll extends StatelessWidget {
                                   arguments: data[i]),
                               leftTask: '1',
                               totalTask: '1',
-                              dateLeft: '',
-                              timeLeft: '',
+                              deadLine: '',
                             ),
                           ),
                         );

@@ -30,9 +30,9 @@ class ProjectModel {
     id: json['id'] as String,
     title: json['title'] as String,
     cover: json['cover'] as String?,
-    backgroundCover: json['backgroundCover'] as String?,
+    backgroundCover: json['backgroundCover'] as String,
     projectColor: json['projectColor'] as String?,
-    projectDeadLine: json['projectDeadLine'] as String?,
+    projectDeadLine: json['projectDeadLine'] as String,
   );
 
   factory ProjectModel.fromDocument(DocumentSnapshot doc) {

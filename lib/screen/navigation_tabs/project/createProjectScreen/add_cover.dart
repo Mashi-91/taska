@@ -2,8 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:taska/constant/color.dart';
-import 'package:taska/screen/navigation_tabs/home/homeController.dart';
+import 'package:taska/model/project_model.dart';
 import 'package:taska/screen/navigation_tabs/project/createProjectScreen/createProjectController.dart';
 import 'package:taska/screen/navigation_tabs/project/widget.dart';
 
@@ -15,7 +14,7 @@ class AddCover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<CreateProjectController>();
-    final data = controller.projectData;
+    final ProjectModel data = controller.projectData;
 
     return Scaffold(
       appBar: Utils.customAppbar(title: 'Add Cover', isGoBack: true, actions: [
@@ -37,11 +36,11 @@ class AddCover extends StatelessWidget {
                   image: DecorationImage(
                     image: controller.photo != null
                         ? FileImage(controller.photo!) // Show picked image
-                        : data['cover'] != ''
+                        : data.cover != ''
                             ? CachedNetworkImageProvider(
-                                Uri.parse(data['cover']).toString(),
+                                Uri.parse(data.cover.toString()).toString(),
                               ) // Show cover image
-                            : AssetImage(data['backgroundCover'])
+                            : AssetImage(data.backgroundCover.toString())
                                 as ImageProvider,
                     // Show background cover
                     fit: BoxFit.cover,

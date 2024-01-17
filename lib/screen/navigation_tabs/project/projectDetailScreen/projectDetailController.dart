@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:taska/model/task_model.dart';
 import 'package:taska/screen/global_controller.dart';
 
 class ProjectDetailController extends GlobalController {
@@ -15,6 +16,7 @@ class ProjectDetailController extends GlobalController {
   File? photo;
   Color? selectedColor;
   String? memoryDateTime;
+  List<TaskModel> projectDetailScreenTask = [];
 
   // Function to set the selected color
   void setSelectedColor(Color color) {

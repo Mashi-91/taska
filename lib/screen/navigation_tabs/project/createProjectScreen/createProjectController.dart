@@ -6,21 +6,27 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:taska/model/project_model.dart';
+import 'package:taska/model/task_model.dart';
 import 'package:taska/screen/global_controller.dart';
 
 class CreateProjectController extends GlobalController {
-  var projectData = {}.obs;
-  late final TextEditingController projectNameController;
-  late final TextEditingController taskNameController;
+  ProjectModel projectData = ProjectModel(id: '', title: '');
+  late TextEditingController projectNameController;
+  late TextEditingController taskNameController;
   File? photo;
   Color? selectedColor;
   String? memoryDateTime;
+  var taskList = <TaskModel>[];
+  bool taskIsDone = false;
 
-  void setProjectData(dynamic data) {
-    projectData.value = data;
-  }
+  // void setProjectData(ProjectModel data) {
+  //   projectData = data;
+  //   update();
+  // }
 
   // Function to set the selected color
   void setSelectedColor(Color color) {
@@ -46,6 +52,30 @@ class CreateProjectController extends GlobalController {
       );
       memoryDateTime = projectDeadLine;
       update(); // Update the UI if necessary
+    } catch (e) {
+      log('Error setting project deadline: $e');
+    }
+  }
+
+  Future<void> setTaskValueIsDone({required String taskId}) async {
+    final taskIndex = taskList.indexWhere((task) => task.taskId == taskId);
+    if (taskIndex != -1) {
+      taskList[taskIndex].isDone = !taskList[taskIndex].isDone;
+      update(); // Update the UI if necessary
+      await updateTaskDone(taskId: taskId, isDone: taskList[taskIndex].isDone);
+    }
+  }
+
+  Future<void> updateTaskDone(
+      {required String taskId, required bool isDone}) async {
+    try {
+      await userCollection
+          .doc(currentUser!.uid)
+          .collection('Tasks')
+          .doc(taskId)
+          .update({
+        'done': isDone,
+      }).then((value) => Logger().w('Your Task is Updated'));
     } catch (e) {
       log('Error setting project deadline: $e');
     }

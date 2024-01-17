@@ -4,12 +4,14 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:multiple_stream_builder/multiple_stream_builder.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:taska/constant/color.dart';
 import 'package:taska/constant/global_function.dart';
@@ -123,64 +125,115 @@ class CreateProjectScreen extends StatelessWidget {
         ],
       ),
       extendBodyBehindAppBar: true,
-      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        stream: controller.userCollection
-            .doc(controller.currentUser?.uid)
-            .collection('Projects')
-            .doc(data.id)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Show loading indicator when waiting for data
-            return Scaffold(
-              body: Center(
-                child: LoadingAnimationWidget.stretchedDots(
-                  color: ColorsUtil.primaryColor,
-                  size: 50,
-                ),
-              ),
-            );
-          } else if (snapshot.hasError) {
-            // Show error message when there's an error
-            return Scaffold(
-              body: Center(
-                child: Text('Error: ${snapshot.error}'),
-              ),
-            );
-          } else if (snapshot.hasData && snapshot.data != null) {
-            final ProjectModel project =
-            ProjectModel.fromJson(snapshot.data!.data()!);
-            if (project != null) {
-              controller.setProjectData(project);
-              return Column(
-                children: [
-                  buildProjectImageSection(project),
-                  Flexible(
-                    flex: 3,
-                    child: buildProjectDetailSection(
-                      project: project,
-                      context: context,
-                    ),
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          StreamBuilder(
+            stream: controller.getAllProjectAsStream(data.id),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                // Show loading indicator when waiting for data
+                return Center(
+                  child: LoadingAnimationWidget.stretchedDots(
+                    color: ColorsUtil.primaryColor,
+                    size: 50,
                   ),
-                ],
-              );
-            } else {
-              // Handle null data case
-              return const Scaffold(
-                body: Center(
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              } else if (snapshot.hasData && snapshot.data != null) {
+                final ProjectModel project =
+                    ProjectModel.fromJson(snapshot.data!.data()!);
+                if (project != null) {
+                  controller.projectData = project;
+                  return Column(
+                    children: [
+                      buildProjectImageSection(project),
+                      buildProjectDetailSection(
+                        project: project,
+                        context: context,
+                      ),
+                    ],
+                  );
+                } else {
+                  // Handle null data case
+                  return const Center(
+                    child: Text('No data available'),
+                  );
+                }
+              } else {
+                return const Center(
                   child: Text('No data available'),
-                ),
-              );
-            }
-          } else {
-            // Handle no data case
-            return const Scaffold(
-              body: Center(
-                child: Text('No data available'),
-              ),
-            );
-          }
-        },
+                );
+              }
+            },
+          ),
+          StreamBuilder(
+            stream: controller.getAllTaskAsStream(data.id),
+            builder: (context, taskSnapshot) {
+              if (taskSnapshot.connectionState == ConnectionState.waiting) {
+                // Show loading indicator when waiting for task data
+                return Center(
+                  child: LoadingAnimationWidget.stretchedDots(
+                    color: ColorsUtil.primaryColor,
+                    size: 50,
+                  ),
+                );
+              } else if (taskSnapshot.hasError) {
+                return Center(
+                  child: Text('Error Task Section: ${taskSnapshot.error}'),
+                );
+              } else {
+                final List<TaskModel> taskList =
+                    taskSnapshot.data!.docs.map((doc) {
+                  return TaskModel.fromDocumentSnapshot(doc);
+                }).toList();
+
+                // Sort the taskList based on the isDone property
+                taskList.sort((a, b) => b.isDone ? 1 : 0);
+                // Store Task Data On Controller Local
+                controller.taskList = taskList;
+                // Display task list or empty image
+                if (taskList.isNotEmpty) {
+                  return Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.only(top: 20),
+                      itemCount: taskList.length,
+                      reverse: true,
+                      itemBuilder: (context, i) {
+                        final tasks = taskList[i];
+                        return GetBuilder<CreateProjectController>(
+                            builder: (_) {
+                          return taskTitleTile(
+                            task: TaskModel(
+                              projectId: controller.projectData.id,
+                              title: tasks.title,
+                              time: tasks.time,
+                              isDone: tasks.isDone,
+                            ),
+                            onTap: () {
+                              controller.setTaskValueIsDone(
+                                taskId: tasks.taskId.toString(),
+                              );
+                            },
+                          );
+                        });
+                      },
+                    ),
+                  );
+                } else {
+                  return SvgPicture.asset(
+                    'assets/images/Empty-img.svg',
+                    height: 400,
+                    alignment: Alignment.bottomCenter,
+                  );
+                }
+              }
+            },
+          ),
+        ],
       ),
       floatingActionButton: Utils.buildCustomFloatingButton(
         onTap: () {
@@ -199,15 +252,17 @@ class CreateProjectScreen extends StatelessWidget {
                 Utils.buildCustomButton(
                   buttonText: 'Create Task',
                   func: () async {
-                    await controller.storeTask(
-                      taskModel: TaskModel(
-                        title: controller.taskNameController.text,
-                        projectId: data.id,
-                        isDone: false,
-                        time: DateTime.now(),
-                      ),
-                    );
-                    // controller.addTaskUID(data['uid']);
+                    if (controller.taskNameController.text.isNotEmpty) {
+                      await controller.storeTask(
+                        taskModel: TaskModel(
+                          title: controller.taskNameController.text,
+                          projectId: data.id,
+                          isDone: false,
+                          time: DateTime.now(),
+                        ),
+                      );
+                      controller.taskNameController.clear();
+                    }
                   },
                   isEnable: true,
                   height: 62,
@@ -225,118 +280,100 @@ class CreateProjectScreen extends StatelessWidget {
     );
   }
 
-  Widget buildProjectImageSection(data) {
+  Widget buildProjectImageSection(ProjectModel data) {
     final controller = Get.find<CreateProjectController>();
 
-    return GetBuilder<CreateProjectController>(
-      builder: (context) => Flexible(
-        child: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: controller.photo != null
-                  ? FileImage(controller.photo!) // Show picked image
-                  : data['cover'] != ''
-                      ? CachedNetworkImageProvider(
-                          Uri.parse(data['cover']).toString(),
-                        ) // Show cover image
-                      : AssetImage(data['backgroundCover']) as ImageProvider,
-              // Show background cover
-              fit: BoxFit.cover,
-            ),
-          ),
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: controller.photo != null
+              ? FileImage(controller.photo!) // Show picked image
+              : data.cover != ''
+                  ? CachedNetworkImageProvider(
+                      Uri.parse(data.cover.toString()).toString(),
+                    ) // Show cover image
+                  : AssetImage(data.backgroundCover.toString())
+                      as ImageProvider,
+          // Show background cover
+          fit: BoxFit.cover,
         ),
       ),
     );
   }
 
-  Widget buildProjectDetailSection(
-      {required ProjectModel project, required BuildContext context}) {
+  Widget buildProjectDetailSection({
+    required ProjectModel project,
+    required BuildContext context,
+  }) {
     final controller = Get.find<CreateProjectController>();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18).copyWith(top: 14),
       alignment: Alignment.topLeft,
       color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            project.title,
-            style: const TextStyle(
-                fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 0.8),
-          ),
-          const Text(
-            'Add Description',
-            style: TextStyle(fontSize: 12, color: ColorsUtil.lightBlack),
-          ),
-          const SizedBox(height: 12),
-          project.projectDeadLine == '' ||
-              project.projectDeadLine == null
-          // controller.memoryDateTime == null
-              ? Utils.buildCustomOutlineButton(
-            width: double.infinity,
-            height: 46,
-            addIcon: false,
-            isEnable: true,
-            borderWidth: 2,
-            buttonText: 'Set Deadline Project',
-            func: () {
-              customBottomSheet(
-                controller,
-                context,
-                bottomPadding: 0,
-                title: 'Set Deadline Project',
-                content: Container(
-                  decoration: BoxDecoration(
-                    color: ColorsUtil.lightGrey
-                        .withOpacity(0.1),
-                    borderRadius:
-                    BorderRadius.circular(20),
-                  ),
-                  child: SfDateRangePicker(
-                    initialDisplayDate:
-                    DateTime.now(),
-                    minDate: DateTime.now(),
-                    onSelectionChanged: (val) {
-                      if (val != null) {
-                        controller
-                            .setProjectDeadline(
-                          projectId: project.id,
-                          dateFromDatePicker:
-                          val.value,
+      child: GetBuilder<CreateProjectController>(
+        builder: (_) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                project.title,
+                style: const TextStyle(
+                    fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+              ),
+              const Text(
+                'Add Description',
+                style: TextStyle(fontSize: 12, color: ColorsUtil.lightBlack),
+              ),
+              const SizedBox(height: 12),
+              project.projectDeadLine == '' || project.projectDeadLine == null
+                  // controller.memoryDateTime == null
+                  ? Utils.buildCustomOutlineButton(
+                      width: double.infinity,
+                      height: 46,
+                      addIcon: false,
+                      isEnable: true,
+                      borderWidth: 2,
+                      buttonText: 'Set Deadline Project',
+                      func: () {
+                        customBottomSheet(
+                          controller,
+                          context,
+                          bottomPadding: 0,
+                          title: 'Set Deadline Project',
+                          content: Container(
+                            decoration: BoxDecoration(
+                              color: ColorsUtil.lightGrey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: SfDateRangePicker(
+                              initialDisplayDate: DateTime.now(),
+                              minDate: DateTime.now(),
+                              onSelectionChanged: (val) {
+                                if (val != null) {
+                                  controller.setProjectDeadline(
+                                    projectId: project.id,
+                                    dateFromDatePicker: val.value,
+                                  );
+                                  Get.back();
+                                }
+                              },
+                            ),
+                          ),
                         );
-                        Get.back();
-                      }
-                    },
-                  ),
-                ),
-              );
-            },
-          )
-              : buildProgressSection(
-            leftTask: '1',
-            totalTask: 'taskDocs.length.toString()',
-            deadLine: project.projectDeadLine == ''
-                ? project.projectDeadLine.toString()
-                : controller.memoryDateTime
-                .toString(),
-          ),
-          // task!.isNotEmpty
-          //     ? Expanded(
-          //         child: ListView.builder(
-          //           padding: const EdgeInsets.only(top: 20),
-          //           itemCount: task.length,
-          //           itemBuilder: (context, i) {
-          //             return taskTitleTile(
-          //                 title: task[i].data()['title']);
-          //           },
-          //         ),
-          //       )
-          //     : SvgPicture.asset(
-          //         'assets/images/Empty-img.svg',
-          //         height: 400,
-          //         alignment: Alignment.bottomCenter,
-          //       )
-        ],
+                      },
+                    )
+                  : buildProgressSection(
+                      totalTask: controller.taskList.length.toString(),
+                      deadLine: project.projectDeadLine == ''
+                          ? project.projectDeadLine.toString()
+                          : controller.memoryDateTime.toString(),
+                      taskList: controller.taskList as List<TaskModel>,
+                    ),
+            ],
+          );
+        }
       ),
     );
   }

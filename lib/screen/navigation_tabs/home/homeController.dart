@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:taska/constant/utils.dart';
+import 'package:taska/model/task_model.dart';
 import 'package:taska/screen/global_controller.dart';
 import '../coverScreen/cover_screen.dart';
 import 'home_screen.dart';
@@ -16,12 +19,15 @@ import '../projectScreen/project_screen.dart';
 class HomeController extends GlobalController {
   late final TextEditingController searchController;
   late final TextEditingController projectNameController;
+  GlobalKey<RefreshIndicatorState> refreshKey =
+      GlobalKey<RefreshIndicatorState>();
 
   var isTaskValueComplete = false.obs;
   var currentIndex = 0.obs;
   final selected = 'Visibility'.obs;
   final isCover = false.obs;
   List<Color> colorList = [];
+  var homeScreenTask = <TaskModel>[];
 
   File? photo;
 
@@ -47,6 +53,17 @@ class HomeController extends GlobalController {
     projectNameController.dispose();
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>>?
+      getAllTasksAsStreamOnHomeScreen() {
+    try {
+      final tasks =
+          userCollection.doc(currentUser!.uid).collection('Tasks').snapshots();
+      return tasks;
+    } catch (e) {
+      log('Error fetching tasks: $e');
+    }
+  }
+
   // <<<<<<<<<<<<<<<<< Functions >>>>>>>>>>>>>>>>>>>>>
   void isCoverFunc() {
     isCover.value = !isCover.value;
@@ -64,8 +81,35 @@ class HomeController extends GlobalController {
     currentIndex.value = i++;
   }
 
+  void setHomeTaskList(val){
+    homeScreenTask = val;
+    update();
+  }
+
   void isCurrentSelected(String val) {
     selected.value = val;
+  }
+
+  // Filter Functions
+  List<TaskModel> filterNotDoneTasks(List<TaskModel> tasks) {
+    return tasks.where((task) => !task.isDone).toList();
+  }
+
+  List<TaskModel> filterTodayTasks(List<TaskModel> tasks) {
+    final DateTime today = DateTime.now();
+    return tasks.where((task) => Utils.isSameDay(task.time, today)).toList();
+  }
+
+  // Function to get the total number of tasks from the list for showing in ProgressLine
+  Iterable<TaskModel> getTotalTasks(List<TaskModel> tasks,String projectId) {
+    return tasks.where((task) => task.projectId == projectId);
+  }
+
+  // Function to get the number of completed tasks from the list for showing in ProgressLine
+  int getCompletedTasks(List<TaskModel> tasks,String projectId) {
+    return tasks
+        .where((task) => task.projectId == projectId && task.isDone)
+        .length;
   }
 
   Future<void> imagePickerFromCamera({String? currentProjectId}) async {

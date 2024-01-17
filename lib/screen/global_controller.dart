@@ -109,103 +109,6 @@ class GlobalController extends GetxController {
 
   // <<<<<<<<<<<<<<<<<<< Firebase Functions >>>>>>>>>>>>>>>>>>>
 
-  createEmailAndPassword(BuildContext context,
-      {required String email, required String password}) async {
-    try {
-      // <<<<<<<<<<<<<< Show Loading >>>>>>>>>>>>>>>>>>>
-      Utils.customLoadingIndicator(context);
-      //<<<<<<<<<<<<<<< Create a User >>>>>>>>>>>>>>>>>>>>>>
-      await firebaseAuth
-          .createUserWithEmailAndPassword(email: email, password: password)
-          .then((value) async {
-        await Utils.snackBarMsg(
-            title: 'Success',
-            msg: 'Your Account has been created, add your profile detail!',
-            snackPosition: SnackPosition.TOP);
-        Get.offAllNamed('/FillYourProfile');
-      });
-    } on FirebaseAuthException catch (e) {
-      if (e.code == "email-already-in-use") {
-        Get.back();
-        return Utils.snackBarMsg(
-            title: "Email-Error", msg: "Email is already in use!");
-      } else if (email.isEmpty && password.isEmpty) {
-        Get.back();
-        return Utils.snackBarMsg(
-            title: 'Credentials-Error', msg: 'Enter your credentials.');
-      } else if (email.isEmpty) {
-        Get.back();
-        return Utils.snackBarMsg(
-            title: 'Email-Error', msg: 'Enter your email!');
-      } else if (password.isEmpty) {
-        Get.back();
-        return Utils.snackBarMsg(
-            title: 'Password-Error', msg: 'Enter your password!');
-      } else if (e.code == "invalid-email") {
-        Get.back();
-        return Utils.snackBarMsg(
-            title: 'Email-Error', msg: 'Enter a valid email!');
-      } else if (e.code == "weak-password") {
-        Get.back();
-        return Utils.snackBarMsg(
-            title: 'Password-Error', msg: 'Password should be greater than 7.');
-      }
-    } catch (e) {
-      Get.back();
-      log("CreateEmailAndPassword: $e");
-    }
-  }
-
-// <<<<<<<<<<<<<< Store Additional Date in Database >>>>>>>>>>>>>>>>>>>
-
-  Future<void> storeUserDetails(BuildContext context,
-      {required FillProfileModel createUserModel,
-      required FillProfileController controller}) async {
-    try {
-      // <<<<<<<<<<<<<< Show Loading >>>>>>>>>>>>>>>>>>>
-      Utils.customLoadingIndicator(context);
-      //<<<<<<<<<<<<<<< Store User Data >>>>>>>>>>>>>>>>>>>>>>
-      if (controller.image.isEmpty) {
-        Utils.snackBarMsg(
-            title: 'Store-User-Error', msg: 'Please add your profile image.');
-      } else if (controller.fullNameController.text.isEmpty) {
-        Utils.snackBarMsg(
-            title: 'Store-User-Error', msg: 'Enter your Full Name.');
-      } else if (controller.userNameController.text.isEmpty) {
-        Utils.snackBarMsg(
-            title: 'Store-User-Error', msg: 'Enter your User Name.');
-      } else if (controller.dateOfBirth.isEmpty) {
-        Utils.snackBarMsg(
-            title: 'Store-User-Error', msg: 'Enter your Date of Birth.');
-      } else if (controller.fillYourEmailAddress.text.isEmpty) {
-        Utils.snackBarMsg(
-            title: 'Store-User-Error', msg: 'Enter your Email-ID.');
-      } else if (controller.phoneController.text.isEmpty) {
-        Utils.snackBarMsg(
-            title: 'Store-User-Error', msg: 'Enter your Phone Number.');
-      } else if (controller.roleController.text.isEmpty) {
-        Utils.snackBarMsg(title: 'Store-User-Error', msg: 'Enter your Role.');
-      } else {
-        await currentUser
-            ?.updateDisplayName(controller.userNameController.text);
-        await currentUser?.updatePhotoURL(controller.image.value);
-        // await currentUser?.updatePhoneNumber(Uri.parse(controller.phoneController.text));
-        await fireStore
-            .collection('users')
-            .doc(currentUser?.uid)
-            .set(createUserModel.toJson())
-            .then((value) async {
-          await Utils.snackBarMsg(
-              title: 'Success', msg: 'Your profile has been created.');
-          Get.offAllNamed("/SignIn");
-        });
-      }
-    } on FirebaseFirestore catch (e) {
-      Get.back();
-      log("FirebaseFireStore: $e");
-    }
-  }
-
   // <<<<<<<<<<<<<<<<<< UserSign >>>>>>>>>>>>>>>>>>>>>
 
   signInUserWithEmailAndPass(BuildContext context,
@@ -222,38 +125,73 @@ class GlobalController extends GetxController {
     } on FirebaseAuthException catch (e) {
       if (e.code == "email-already-in-use") {
         Get.back();
-        return Utils.snackBarMsg(
-            title: "Sign-In-User-Error", msg: "Email is already in use!");
+        return Utils.snackBarMsg(msg: "Email is already in use!");
       } else if (email.isEmpty && password.isEmpty) {
         Get.back();
-        return Utils.snackBarMsg(
-            title: 'Sign-In-User-Error', msg: 'Enter your credentials.');
+        return Utils.snackBarMsg(msg: 'Enter your credentials.');
       } else if (email.isEmpty) {
         Get.back();
-        return Utils.snackBarMsg(
-            title: 'Sign-In-User-Error', msg: 'Enter your email!');
+        return Utils.snackBarMsg(msg: 'Enter your email!');
       } else if (password.isEmpty) {
         Get.back();
-        return Utils.snackBarMsg(
-            title: 'Sign-In-User-Error', msg: 'Enter your password!');
+        return Utils.snackBarMsg(msg: 'Enter your password!');
       } else if (e.code == "user-not-found") {
         Get.back();
         return Utils.snackBarMsg(
-            title: 'Sign-In-User-Error',
             msg:
-                "There's no email with this email-id, Please go ahead & create one!");
+            "There's no email with this email-id, Please go ahead & create one!");
       } else if (e.code == "invalid-email") {
         Get.back();
-        return Utils.snackBarMsg(
-            title: 'Sign-In-User-Error', msg: 'Enter a valid email!');
+        return Utils.snackBarMsg(msg: 'Enter a valid email!');
       } else if (e.code == "weak-password") {
         Get.back();
-        return Utils.snackBarMsg(
-            title: 'Sign-In-User-Error', msg: 'Wrong Password!');
+        return Utils.snackBarMsg(msg: 'Week Password!');
+      } else if (e.code == "wrong-password") {
+        return Utils.snackBarMsg(msg: "Wrong Password!");
       }
     } catch (e) {
       Get.back();
       log("Sign-In-User-WithEmailAndPass: $e");
+    }
+  }
+
+  createEmailAndPassword(BuildContext context,
+      {required String email, required String password}) async {
+    try {
+      // <<<<<<<<<<<<<< Show Loading >>>>>>>>>>>>>>>>>>>
+      Utils.customLoadingIndicator(context);
+      //<<<<<<<<<<<<<<< Create a User >>>>>>>>>>>>>>>>>>>>>>
+      await firebaseAuth
+          .createUserWithEmailAndPassword(email: email, password: password)
+          .then((value) async {
+        await Utils.snackBarMsg(
+            msg: 'Your Account has been created, add your profile detail!',
+            snackPosition: SnackPosition.TOP);
+        Get.offAllNamed('/FillYourProfile');
+      });
+    } on FirebaseAuthException catch (e) {
+      if (e.code == "email-already-in-use") {
+        Get.back();
+        return Utils.snackBarMsg(msg: "Email is already in use!");
+      } else if (email.isEmpty && password.isEmpty) {
+        Get.back();
+        return Utils.snackBarMsg(msg: 'Enter your credentials.');
+      } else if (email.isEmpty) {
+        Get.back();
+        return Utils.snackBarMsg(msg: 'Enter your email!');
+      } else if (password.isEmpty) {
+        Get.back();
+        return Utils.snackBarMsg(msg: 'Enter your password!');
+      } else if (e.code == "invalid-email") {
+        Get.back();
+        return Utils.snackBarMsg(msg: 'Enter a valid email!');
+      } else if (e.code == "weak-password") {
+        Get.back();
+        return Utils.snackBarMsg(msg: 'Password should be greater than 7.');
+      }
+    } catch (e) {
+      Get.back();
+      log("CreateEmailAndPassword: $e");
     }
   }
 
@@ -296,17 +234,59 @@ class GlobalController extends GetxController {
     } on FirebaseAuthException catch (e) {
       if (e.code == "auth/invalid-email") {
         Get.back();
-        return Utils.snackBarMsg(
-            title: 'Reset-Password-Error', msg: "Enter a valid email-address!");
+        return Utils.snackBarMsg(msg: "Enter a valid email-address!");
       } else if (e.code == "auth/user-not-found") {
         Get.back();
-        return Utils.snackBarMsg(
-            title: "Reset-Password-Error",
-            msg: "Your email-address not registered!");
+        return Utils.snackBarMsg(msg: "Your email-address not registered!");
       }
     } catch (e) {
       Get.back();
       log("Reset-Password-Error: $e");
+    }
+  }
+
+
+
+// <<<<<<<<<<<<<< Store Additional Date in Database >>>>>>>>>>>>>>>>>>>
+
+  Future<void> storeUserDetails(BuildContext context,
+      {required FillProfileModel createUserModel,
+      required FillProfileController controller}) async {
+    try {
+      // <<<<<<<<<<<<<< Show Loading >>>>>>>>>>>>>>>>>>>
+      Utils.customLoadingIndicator(context);
+      //<<<<<<<<<<<<<<< Store User Data >>>>>>>>>>>>>>>>>>>>>>
+      if (controller.image.isEmpty) {
+        Utils.snackBarMsg(msg: 'Please add your profile image.');
+      } else if (controller.fullNameController.text.isEmpty) {
+        Utils.snackBarMsg(msg: 'Enter your Full Name.');
+      } else if (controller.userNameController.text.isEmpty) {
+        Utils.snackBarMsg(msg: 'Enter your User Name.');
+      } else if (controller.dateOfBirth.isEmpty) {
+        Utils.snackBarMsg(msg: 'Enter your Date of Birth.');
+      } else if (controller.fillYourEmailAddress.text.isEmpty) {
+        Utils.snackBarMsg(msg: 'Enter your Email-ID.');
+      } else if (controller.phoneController.text.isEmpty) {
+        Utils.snackBarMsg(msg: 'Enter your Phone Number.');
+      } else if (controller.roleController.text.isEmpty) {
+        Utils.snackBarMsg(msg: 'Enter your Role.');
+      } else {
+        await currentUser
+            ?.updateDisplayName(controller.userNameController.text);
+        await currentUser?.updatePhotoURL(controller.image.value);
+        // await currentUser?.updatePhoneNumber(Uri.parse(controller.phoneController.text));
+        await fireStore
+            .collection('users')
+            .doc(currentUser?.uid)
+            .set(createUserModel.toJson())
+            .then((value) async {
+          await Utils.snackBarMsg(msg: 'Your profile has been created.');
+          Get.offAllNamed("/SignIn");
+        });
+      }
+    } on FirebaseFirestore catch (e) {
+      Get.back();
+      log("FirebaseFireStore: $e");
     }
   }
 
@@ -402,22 +382,22 @@ class GlobalController extends GetxController {
     }
   }
 
-  void addTaskUID(String? projectUID) async {
-    try {
-      final timeStamp = Timestamp.now().millisecondsSinceEpoch.toString();
-      await taskCollection
-          .doc(currentUser!.uid)
-          .collection('Tasks')
-          .doc(timeStamp)
-          .set({
-        'taskID': timeStamp,
-        'projectID': projectUID,
-      });
-      log(taskUID);
-    } on FirebaseFirestore catch (e) {
-      log('Showing Error while adding taskUID: $e');
-    }
-  }
+  // void addTaskUID(String? projectUID) async {
+  //   try {
+  //     final timeStamp = Timestamp.now().millisecondsSinceEpoch.toString();
+  //     await taskCollection
+  //         .doc(currentUser!.uid)
+  //         .collection('Tasks')
+  //         .doc(timeStamp)
+  //         .set({
+  //       'taskID': timeStamp,
+  //       'projectID': projectUID,
+  //     });
+  //     log(taskUID);
+  //   } on FirebaseFirestore catch (e) {
+  //     log('Showing Error while adding taskUID: $e');
+  //   }
+  // }
 
   Future<String?> getCoverImageUrl(String projectId) async {
     try {
@@ -525,6 +505,7 @@ class GlobalController extends GetxController {
           .collection('Projects')
           .orderBy('id', descending: true)
           .get();
+      log('message');
       return user;
     } on FirebaseFirestore catch (e) {
       log('While getting all projects: $e');
@@ -555,6 +536,49 @@ class GlobalController extends GetxController {
     }
   }
 
+  Future<QuerySnapshot<Map<String, dynamic>>> getAllTaskAsFuture(
+      String projectId) {
+    try {
+      if (currentUser != null) {
+        return userCollection
+            .doc(currentUser!.uid)
+            .collection(
+            'Tasks') // Assuming 'tasks' is the root collection for tasks
+            .where('projectId', isEqualTo: projectId)
+            .where('userId', isEqualTo: currentUser!.uid)
+            .get();
+      } else {
+        // Handle the case where the user is not authenticated
+        Logger().w('User not authenticated');
+        return Future.value(); // Return an empty stream
+      }
+    } catch (e) {
+      // Catch any errors that occur during the process
+      Logger().e('Error getting all tasks: $e', error: e);
+      return Future.value(); // Return an empty stream
+    }
+  }
+
+  Stream getAllProjectAsStream(String projectId) {
+    try {
+      if (currentUser != null) {
+        return userCollection
+            .doc(currentUser!.uid)
+            .collection('Projects')
+            .doc(projectId)
+            .snapshots();
+      } else {
+        // Handle the case where the user is not authenticated
+        Logger().w('User not authenticated');
+        return const Stream.empty(); // Return an empty stream
+      }
+    } catch (e) {
+      // Catch any errors that occur during the process
+      Logger().e('Error getting all tasks: $e', error: e);
+      return const Stream.empty(); // Return an empty stream
+    }
+  }
+
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Create A Task >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   Future<void> storeTask({
@@ -562,10 +586,8 @@ class GlobalController extends GetxController {
   }) async {
     try {
       final userId = currentUser?.uid;
-
       if (userId != null) {
         final uid = Timestamp.now().seconds.toString();
-
         final map = TaskModel(
           taskId: uid,
           projectId: taskModel.projectId,
@@ -583,6 +605,7 @@ class GlobalController extends GetxController {
             .then((value) {
           Logger().t('Your task is create!');
         });
+        update();
         Get.back(); // Navigating back using GetX
       } else {
         // Handle the case where the user is not authenticated
@@ -659,7 +682,7 @@ class GlobalController extends GetxController {
           .update({
         firebaseFiledName: updateField,
       });
-      Logger().i('Color updated successfully in Firebase!');
+      Logger().i('$updateField updated successfully in Firebase!');
     } catch (e, stackTrace) {
       Logger().e('Error updating color in Firebase: $e',
           error: e, stackTrace: stackTrace);

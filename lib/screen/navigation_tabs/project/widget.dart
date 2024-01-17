@@ -60,12 +60,17 @@ Future customBottomSheet(dynamic controller, BuildContext context,
           ));
 }
 
-buildProgressSection(
-    {required String totalTask,
-    required String leftTask,
-    required String deadLine}) {
-  final daysLeft = GlobalFunction.calculateDaysLeft(deadLine);
-
+buildProgressSection({
+  required String totalTask,
+  required String deadLine,
+  required List<TaskModel> taskList,
+}) {
+  final daysLeft = GlobalFunction.calculateTimeLeft(deadLine);
+  final showDaysLeft = GlobalFunction.formatDeadline(deadLine);
+  // Calculate the completion percentage
+  final completedTasks = taskList.where((task) => task.isDone).length;
+  final calculatedLinePercentage =
+      Utils.calculateLinePercentage(completedTasks, int.parse(totalTask));
   return Column(
     children: [
       Row(
@@ -85,12 +90,12 @@ buildProgressSection(
                 ]),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
             child: Text(
-              '$leftTask / $totalTask',
+              '$completedTasks / $totalTask',
               style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
           ),
           Text(
-            'Days Left, $daysLeft',
+            '$daysLeft, $showDaysLeft',
             style: const TextStyle(fontSize: 10, color: Colors.grey),
           )
         ],
@@ -103,7 +108,8 @@ buildProgressSection(
         animationDuration: 400,
         padding: EdgeInsets.zero,
         barRadius: const Radius.circular(12),
-        percent: 0.5,
+        animateFromLastPercent: true,
+        percent: calculatedLinePercentage,
         backgroundColor: Colors.grey.withOpacity(0.3),
         progressColor: ColorsUtil.primaryColor,
       )
@@ -118,8 +124,8 @@ Widget projectCardWithImg({
   required Function onTapOption,
   required String totalTask,
   required String leftTask,
-  required String timeLeft,
-  required String dateLeft,
+  required String deadLine,
+  List<TaskModel>? taskModel,
   EdgeInsets? margin,
 }) {
   final size = Get.height;
@@ -188,11 +194,12 @@ Widget projectCardWithImg({
                           fontSize: 12, fontWeight: FontWeight.normal),
                     ),
                     SizedBox(height: size * 0.02),
-                    buildProgressSection(
-                      totalTask: totalTask,
-                      leftTask: leftTask,
-                      deadLine: timeLeft,
-                    )
+                    if (deadLine.isNotEmpty)
+                      buildProgressSection(
+                        totalTask: totalTask,
+                        deadLine: deadLine,
+                        taskList: taskModel?.toList() ?? <TaskModel>[],
+                      )
                   ],
                 ),
               ),
@@ -262,8 +269,8 @@ Widget projectCardWithoutImg({
                     ),
                     buildProgressSection(
                       totalTask: totalTask,
-                      leftTask: leftTask,
                       deadLine: timeLeft,
+                      taskList: [],
                     )
                   ],
                 ),
@@ -275,7 +282,9 @@ Widget projectCardWithoutImg({
 }
 
 Widget taskTile({required TaskModel taskModel}) {
+  final time = Utils.formatTaskTime(taskModel.time);
   return Container(
+    margin: const EdgeInsets.symmetric(vertical: 10),
     decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -284,7 +293,8 @@ Widget taskTile({required TaskModel taskModel}) {
               offset: const Offset(0, 1),
               color: Colors.grey.withOpacity(0.2),
               blurRadius: 2)
-        ]),
+        ],
+    ),
     child: ListTile(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       title: Text(
@@ -292,7 +302,7 @@ Widget taskTile({required TaskModel taskModel}) {
         style: const TextStyle(fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
-        'taskModel.dateCreated',
+        time,
         style: const TextStyle(fontSize: 12.5),
       ),
       trailing: InkWell(
@@ -322,48 +332,45 @@ Widget taskTile({required TaskModel taskModel}) {
   );
 }
 
-Widget taskTitleTile({required String title, required DateTime time}) {
-  DateTime now = DateTime.now();
-  DateTime today = DateTime(now.year, now.month, now.day);
-  DateTime yesterday = today.subtract(const Duration(days: 1));
-
-  String displayText;
-
-  if (time.isAfter(today)) {
-    displayText = 'Today ${DateFormat.jmz().format(time)}';
-  } else if (time.isAfter(yesterday)) {
-    displayText = 'Yesterday ${DateFormat.jmz().format(time)}';
-  } else {
-    displayText = DateFormat.yMd().add_jm().format(time);
-  }
+Widget taskTitleTile({required TaskModel task, required Function onTap}) {
+  final time = Utils.formatTaskTime(task.time);
   return Container(
-    margin: const EdgeInsets.only(right: 80, bottom: 12),
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    width: Get.width,
+    height: 80,
     decoration: BoxDecoration(
-        color: ColorsUtil.transparent,
+        color: ColorsUtil.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
               offset: const Offset(0, 1),
               color: Colors.grey.withOpacity(0.2),
-              blurRadius: 2)
+              blurRadius: 4)
         ]),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    child: Row(
       children: [
-        Row(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              task.title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
-            const Spacer(),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(FluentIcons.add_square_16_regular),
-            )
+            const SizedBox(height: 6),
+            Text(
+              time,
+              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12),
+            ),
           ],
         ),
+        const Spacer(),
+        IconButton(
+          onPressed: () => onTap(),
+          icon: task.isDone
+              ? Utils.buildSvgToIcon(iconName: 'checkmark-filled-icon')
+              : Utils.buildSvgToIcon(iconName: 'checkmark-regular-icon'),
+        )
       ],
     ),
   );

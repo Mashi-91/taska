@@ -4,6 +4,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 
 class GlobalFunction {
   static phoneFormat(String enterPhoneNumber) {
@@ -63,27 +64,52 @@ class GlobalFunction {
         .toLowerCase();
   }
 
-  static int calculateDaysLeft(String deadLine) {
-    DateTime deadlineDate;
-    int daysLeft = 0;
-
-    if (deadLine.isNotEmpty) {
-      try {
-        deadlineDate = DateFormat('yyyy-MM-dd').parse(deadLine);
-
-        DateTime now = DateTime.now();
-        Duration difference = deadlineDate.difference(now);
-        daysLeft = difference.inDays;
-      } catch (e) {
-        log('Error parsing deadline: $e');
+  static String formatDeadline(String deadLine) {
+    try {
+      if (deadLine.isNotEmpty) {
+        DateTime originalDeadline = DateFormat('yyyy-MM-dd').parse(deadLine);
+        return DateFormat('MMM dd yyyy').format(originalDeadline);
+      } else {
+        log('Empty deadline string');
+        return 'Empty deadline string';
       }
-    } else {
-      log('Deadline is empty');
+    } catch (e) {
+      log('Error parsing deadline: $e');
+      return 'Error parsing deadline';
     }
-
-    return daysLeft;
   }
 
+  static String calculateTimeLeft(String deadLine) {
+    DateTime deadlineDate;
+
+    try {
+      if (deadLine.isNotEmpty) {
+        deadlineDate =
+            DateFormat('yyyy-MM-dd HH:mm:ss').parse('$deadLine 23:59:59');
+        DateTime now = DateTime.now();
+        if (deadlineDate.isAfter(now)) {
+          Duration difference = deadlineDate.difference(now);
+
+          if (deadlineDate.day == now.day) {
+            // If the deadline is today, show hours instead of days
+            int hoursLeft = difference.inHours;
+            return '$hoursLeft hours left';
+          } else {
+            int daysLeft = difference.inDays;
+            return '$daysLeft days left';
+          }
+        } else {
+          log('Deadline has passed');
+          return 'Deadline has passed';
+        }
+      } else {
+        return 'Empty deadline string';
+      }
+    } catch (e) {
+      Logger().e('Error parsing deadline: $e');
+      return 'Error parsing deadline';
+    }
+  }
 
   static String splashScreenPage1Description =
       'Organizing tasks and projects is essential for maintaining productivity, meeting deadlines, and reducing stress.';

@@ -161,8 +161,7 @@ class ProjectScreen extends StatelessWidget {
                                     arguments: data[i].data()),
                                 leftTask: '1',
                                 totalTask: '1',
-                                dateLeft: '',
-                                timeLeft: '',
+                                deadLine: '',
                               ),
                             ),
                           );

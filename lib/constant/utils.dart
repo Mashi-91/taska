@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'color.dart';
 
@@ -319,6 +320,19 @@ class Utils {
     );
   }
 
+  static double calculateLinePercentage(int completedTasks, int totalTasks) {
+    if (totalTasks == 0) {
+      return 0.0; // To avoid division by zero
+    }
+    return completedTasks / totalTasks;
+  }
+
+  static bool isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
+
   static Widget buildCustomFloatingButton({
     Key? key,
     required VoidCallback onTap,
@@ -334,7 +348,7 @@ class Utils {
         width: width ?? 44,
         alignment: Alignment.center,
         margin:
-            EdgeInsets.only(top: 58, bottom: bottom ?? 0, right: right ?? 0),
+            EdgeInsets.only(bottom: bottom ?? 0, right: right ?? 0),
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: ColorsUtil.primaryColor,
@@ -346,6 +360,25 @@ class Utils {
         ),
       ),
     );
+  }
+
+  static Future setCustomToken({required String tokenKey, required String tokenValue}) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    return pref.setString(tokenKey, tokenValue);
+  }
+
+  static String formatTaskTime(DateTime time) {
+    DateTime now = DateTime.now();
+    DateTime today = DateTime(now.year, now.month, now.day);
+    DateTime yesterday = today.subtract(const Duration(days: 1));
+
+    if (time.isAfter(today)) {
+      return 'Today ${DateFormat.jmz().format(time)}';
+    } else if (time.isAfter(yesterday)) {
+      return 'Yesterday ${DateFormat.jmz().format(time)}';
+    } else {
+      return DateFormat.yMd().add_jm().format(time);
+    }
   }
 
   static Widget buildCustomDivider({
@@ -392,7 +425,7 @@ class Utils {
   }
 
   static snackBarMsg(
-      {String? title,
+      {
       Widget? titleWidget,
       required String msg,
       bool isError = false,

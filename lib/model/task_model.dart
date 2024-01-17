@@ -40,13 +40,14 @@ class TaskModel {
     );
   }
 
-  TaskModel.fromDocumentSnapshot(
-      DocumentSnapshot<Map<String, dynamic>> documentSnapshot) {
-    taskId = documentSnapshot.data()?['id'];
-    projectId = documentSnapshot.data()?['projectId'];
-    userId = documentSnapshot.data()?['userId'];
-    title = documentSnapshot.data()?['title'];
-    time = DateTime.parse(documentSnapshot.data()?['time']);
-    isDone = documentSnapshot.data()?['done'];
+  TaskModel.fromDocumentSnapshot(DocumentSnapshot<Map<String, dynamic>> documentSnapshot) {
+    final data = documentSnapshot.data() ?? {};
+    taskId = data['id'];
+    projectId = data['projectId'];
+    userId = data['userId'];
+    title = data['title'];
+    time = DateTime.parse(data['time']);
+    // Convert 'done' to a boolean
+    isDone = data['done'] ?? false; // Replace 'false' with the default value if 'done' is null
   }
 }
