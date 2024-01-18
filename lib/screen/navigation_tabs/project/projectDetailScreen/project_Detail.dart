@@ -111,14 +111,17 @@ class ProjectDetail extends StatelessWidget {
       ),
       extendBodyBehindAppBar: true,
       body: GetBuilder<ProjectDetailController>(
-        builder: (_) => Column(
-          children: [
-            ProjectDetailLogic.buildHeroSection(data),
-            ProjectDetailLogic.buildProjectDetailSection(
-              project: data,
-              context: context,
-            ),
-          ],
+        builder: (_) => SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ProjectDetailLogic.buildHeroSection(data),
+              ProjectDetailLogic.buildProjectDetailSection(
+                project: data,
+                context: context,
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: Utils.buildCustomFloatingButton(

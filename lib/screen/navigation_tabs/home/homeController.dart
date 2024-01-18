@@ -95,6 +95,14 @@ class HomeController extends GlobalController {
     return tasks.where((task) => !task.isDone).toList();
   }
 
+  List<TaskModel> filterTasksByProject(List<TaskModel> tasks, String project) {
+    return tasks.where((task) => task.projectId == project).toList();
+  }
+
+  List<TaskModel> filterNotDoneTasksByProject(List<TaskModel> tasks, String project) {
+    return filterNotDoneTasks(filterTasksByProject(tasks, project));
+  }
+
   List<TaskModel> filterTodayTasks(List<TaskModel> tasks) {
     final DateTime today = DateTime.now();
     return tasks.where((task) => Utils.isSameDay(task.time, today)).toList();

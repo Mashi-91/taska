@@ -123,7 +123,6 @@ Widget projectCardWithImg({
   required String subTitle,
   required Function onTapOption,
   required String totalTask,
-  required String leftTask,
   required String deadLine,
   List<TaskModel>? taskModel,
   EdgeInsets? margin,
@@ -335,7 +334,7 @@ Widget taskTile({required TaskModel taskModel}) {
 Widget taskTitleTile({required TaskModel task, required Function onTap}) {
   final time = Utils.formatTaskTime(task.time);
   return Container(
-    margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
     width: Get.width,
     height: 80,

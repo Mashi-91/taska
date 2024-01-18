@@ -190,9 +190,8 @@ class CreateProjectScreen extends StatelessWidget {
                     taskSnapshot.data!.docs.map((doc) {
                   return TaskModel.fromDocumentSnapshot(doc);
                 }).toList();
-
                 // Sort the taskList based on the isDone property
-                taskList.sort((a, b) => b.isDone ? 1 : 0);
+                taskList.sort((a, b) => a.isDone ? 1 : 0);
                 // Store Task Data On Controller Local
                 controller.taskList = taskList;
                 // Display task list or empty image
@@ -201,7 +200,7 @@ class CreateProjectScreen extends StatelessWidget {
                     child: ListView.builder(
                       padding: const EdgeInsets.only(top: 20),
                       itemCount: taskList.length,
-                      reverse: true,
+                      physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, i) {
                         final tasks = taskList[i];
                         return GetBuilder<CreateProjectController>(

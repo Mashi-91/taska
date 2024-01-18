@@ -67,8 +67,9 @@ class HomeScreen extends StatelessWidget {
                         child: const Text(
                           'See All',
                           style: TextStyle(
-                              color: ColorsUtil.primaryColor,
-                              fontWeight: FontWeight.bold),
+                            color: ColorsUtil.primaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -218,10 +219,6 @@ class HomeScreen extends StatelessWidget {
           onTapOption: () {
             Get.toNamed(AppRoutes.projectDetail, arguments: project);
           },
-          leftTask: controller
-              .filterNotDoneTasks(getProjectIdBasedTask)
-              .length
-              .toString(),
           totalTask: getProjectIdBasedTask.length.toString(),
           deadLine: project.projectDeadLine.toString(),
           taskModel: getProjectIdBasedTask, // Pass tasks to projectCardWithImg

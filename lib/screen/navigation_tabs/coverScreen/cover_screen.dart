@@ -59,7 +59,6 @@ class CoverScreen extends StatelessWidget {
                       subTitle: 'subTitle',
                       onTapOption: () => Get.toNamed(AppRoutes.projectDetail,
                           arguments: data[i].data()),
-                      leftTask: '1',
                       totalTask: '1',
                       deadLine: '',
                     ),

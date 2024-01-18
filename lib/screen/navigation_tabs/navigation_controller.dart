@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taska/constant/utils.dart';
@@ -20,7 +18,6 @@ class HomeNavigationController extends StatelessWidget {
         body: controller.pages[controller.currentIndex.value],
         floatingActionButton: Utils.buildCustomFloatingButton(
           onTap: () {
-            // log(controller.notificationToken.toString());
             customBottomSheet(controller, context,
                 title: 'New Project',
                 content: Column(

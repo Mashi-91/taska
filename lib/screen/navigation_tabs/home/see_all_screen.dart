@@ -71,15 +71,17 @@ class SeeAll extends StatelessWidget {
               if (data == null || data.isEmpty) {
                 return const Center(child: Text('No Projects Found'));
               }
-
               return ListView.builder(
                 itemCount: data.length,
                 itemBuilder: (context, i) {
-                  final projectData = data[i];
+                  final ProjectModel projectData = data[i];
                   final title = projectData.title;
                   final tag = title;
                   final cover = projectData.cover ?? '';
-
+                  final totalTask = controller.getTotalTasks(
+                      controller.homeScreenTask, projectData.id);
+                  final isDoneTask = controller.filterNotDoneTasksByProject(
+                      controller.homeScreenTask, projectData.id);
                   return controller.isCover.value
                       ? Material(
                           child: projectCardWithoutImg(
@@ -90,10 +92,10 @@ class SeeAll extends StatelessWidget {
                             onTapOption: () => Get.toNamed(
                                 AppRoutes.projectDetail,
                                 arguments: data[i]),
-                            timeLeft: '1',
-                            totalTask: data.length.toString(),
+                            timeLeft: projectData.projectDeadLine.toString(),
+                            totalTask: totalTask.length.toString(),
                             dateLeft: '',
-                            leftTask: '',
+                            leftTask: isDoneTask.length.toString(),
                           ),
                         )
                       : Material(
@@ -115,9 +117,9 @@ class SeeAll extends StatelessWidget {
                               onTapOption: () => Get.toNamed(
                                   AppRoutes.projectDetail,
                                   arguments: data[i]),
-                              leftTask: '1',
-                              totalTask: '1',
-                              deadLine: '',
+                              totalTask: totalTask.length.toString(),
+                              deadLine: projectData.projectDeadLine.toString(),
+                              taskModel: totalTask.toList(),
                             ),
                           ),
                         );

@@ -19,9 +19,10 @@ class ProjectDetailLogic {
     final homeController = Get.find<HomeController>();
     final controller = Get.find<ProjectDetailController>();
 
-    return Flexible(
-      child: Hero(
-        tag: homeController.isCover.value ? '' : data.title,
+    return Hero(
+      tag: homeController.isCover.value ? '' : data.title,
+      child: SizedBox(
+        height: Get.height * 0.24,
         child: Material(
           child: FutureBuilder(
             future: data.cover != ''
@@ -36,10 +37,8 @@ class ProjectDetailLogic {
                   ),
                 );
               }
-
               if (snapshot.hasData && snapshot.data != null) {
                 final cover = data.cover;
-
                 return Container(
                   decoration: BoxDecoration(
                     image: DecorationImage(
@@ -57,7 +56,6 @@ class ProjectDetailLogic {
                   ),
                 );
               }
-
               return Container(
                 decoration: BoxDecoration(
                   image: DecorationImage(
@@ -118,7 +116,7 @@ class ProjectDetailLogic {
                             letterSpacing: 0.8,
                           ),
                         ),
-                        SizedBox(height: Get.height * 0.02),
+                        const SizedBox(height: 12),
                         const Text(
                           'Add Description',
                           style: TextStyle(
@@ -169,8 +167,9 @@ class ProjectDetailLogic {
                                 },
                               )
                             : buildProgressSection(
-                                totalTask:
-                                    controller.projectDetailScreenTask.length.toString(),
+                                totalTask: controller
+                                    .projectDetailScreenTask.length
+                                    .toString(),
                                 deadLine: projectFromStream.projectDeadLine
                                     .toString(),
                                 taskList: controller.projectDetailScreenTask,
@@ -181,6 +180,7 @@ class ProjectDetailLogic {
                   return const Text('No Data Available');
                 },
               ),
+              const SizedBox(height: 12),
               StreamBuilder(
                 stream: controller.getAllTaskAsStream(project.id),
                 builder: (context, snapshot) {
@@ -195,24 +195,29 @@ class ProjectDetailLogic {
                   final List<TaskModel> tasks = snapshot.data!.docs
                       .map((e) => TaskModel.fromDocumentSnapshot(e))
                       .toList();
+                  // Sort the taskList based on the isDone property
+                  tasks.sort((a, b) => a.isDone ? 1 : 0);
                   controller.projectDetailScreenTask = tasks;
                   if (tasks.isNotEmpty) {
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      padding: EdgeInsets.zero,
-                      itemCount: tasks.length,
-                      itemBuilder: (context, i) {
-                        final taskList = tasks[i];
-                        return taskTitleTile(
-                          task: TaskModel(
-                            projectId: project.id,
-                            title: taskList.title,
-                            time: taskList.time,
-                            isDone: taskList.isDone,
-                          ),
-                          onTap: () {},
-                        );
-                      },
+                    return SizedBox(
+                      height: Get.height * 0.57,
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: tasks.length,
+                        itemBuilder: (context, i) {
+                          final taskList = tasks[i];
+                          return taskTitleTile(
+                            task: TaskModel(
+                              projectId: project.id,
+                              title: taskList.title,
+                              time: taskList.time,
+                              isDone: taskList.isDone,
+                            ),
+                            onTap: () {},
+                          );
+                        },
+                      ),
                     );
                   } else {
                     return Center(
