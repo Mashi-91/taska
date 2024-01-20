@@ -1,7 +1,7 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:taska/routes/appRoutes.dart';
 
 class SplashController extends GetxController {
   final PageController pageController = PageController(initialPage: 0);
@@ -13,13 +13,13 @@ class SplashController extends GetxController {
 
   void nextButtonFunc(BuildContext context) {
     if (currentIndex.value >= 2) {
-      Get.offNamedUntil('/', (route) => false);
+      Get.offNamedUntil(AppRoutes.authScreen, (route) => false);
     }
     pageController.nextPage(
-        duration: const Duration(microseconds: 800), curve: Curves.bounceIn);
+        duration: const Duration(milliseconds: 400), curve: Curves.easeIn);
   }
 
   void skipButtonFunc() {
-    Get.offNamedUntil('/', (route) => false);
+    Get.offNamedUntil(AppRoutes.authScreen, (route) => false);
   }
 }

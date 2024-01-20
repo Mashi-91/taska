@@ -44,6 +44,46 @@ class Utils {
     );
   }
 
+  static buildCustomColumn({required String title, required String subTitle}) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          subTitle,
+          style: const TextStyle(
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+  static buildCustomRow({required String title, required String subTitle}) {
+    return Row(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(width: 20),
+        Text(
+          subTitle,
+          style: const TextStyle(
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
   static customLoadingIndicator2(
       {Color color = ColorsUtil.primaryColor, double size = 50}) {
     Center(
@@ -347,8 +387,7 @@ class Utils {
         height: height ?? 44,
         width: width ?? 44,
         alignment: Alignment.center,
-        margin:
-            EdgeInsets.only(bottom: bottom ?? 0, right: right ?? 0),
+        margin: EdgeInsets.only(bottom: bottom ?? 0, right: right ?? 0),
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: ColorsUtil.primaryColor,
@@ -362,7 +401,8 @@ class Utils {
     );
   }
 
-  static Future setCustomToken({required String tokenKey, required String tokenValue}) async {
+  static Future setCustomToken(
+      {required String tokenKey, required String tokenValue}) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     return pref.setString(tokenKey, tokenValue);
   }
@@ -425,8 +465,7 @@ class Utils {
   }
 
   static snackBarMsg(
-      {
-      Widget? titleWidget,
+      {Widget? titleWidget,
       required String msg,
       bool isError = false,
       SnackPosition? snackPosition = SnackPosition.BOTTOM}) {

@@ -1,4 +1,5 @@
 import 'package:dots_indicator/dots_indicator.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -69,10 +70,11 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                       isEnable: true,
                       buttonText: 'Next',
                       func: () async {
-                        final prefs = await SharedPreferences.getInstance();
-                        prefs.setInt(ONBOARDINGTOKEN, 1).then((value) {
-                          controller.nextButtonFunc(context);
-                        });
+                        controller.nextButtonFunc(context);
+                        if (controller.currentIndex.value >= 2) {
+                          final prefs = await SharedPreferences.getInstance();
+                          prefs.setInt(ONBOARDINGTOKEN, 1);
+                        }
                       }),
                   const SizedBox(height: 12),
                   Utils.buildCustomButton(

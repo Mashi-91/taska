@@ -147,6 +147,7 @@ class GlobalController extends GetxController {
         Get.back();
         return Utils.snackBarMsg(msg: 'Week Password!');
       } else if (e.code == "wrong-password") {
+        Get.back();
         return Utils.snackBarMsg(msg: "Wrong Password!");
       }
     } catch (e) {

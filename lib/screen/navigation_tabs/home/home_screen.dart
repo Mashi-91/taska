@@ -210,18 +210,21 @@ class HomeScreen extends StatelessWidget {
         final List<TaskModel> getProjectIdBasedTask =
             controller.getTotalTasks(totalTasks, projects[i].id).toList();
 
-        return projectCardWithImg(
-          imageProvider: project.cover != ''
-              ? CachedNetworkImageProvider(Uri.parse(project.cover!).toString())
-              : AssetImage(project.backgroundCover.toString()),
-          title: project.title,
-          subTitle: 'subTitle',
-          onTapOption: () {
-            Get.toNamed(AppRoutes.projectDetail, arguments: project);
-          },
-          totalTask: getProjectIdBasedTask.length.toString(),
-          deadLine: project.projectDeadLine.toString(),
-          taskModel: getProjectIdBasedTask, // Pass tasks to projectCardWithImg
+        return Hero(
+          tag: project.title,
+          child: projectCardWithImg(
+            imageProvider: project.cover != ''
+                ? CachedNetworkImageProvider(Uri.parse(project.cover!).toString())
+                : AssetImage(project.backgroundCover.toString()),
+            title: project.title,
+            subTitle: 'subTitle',
+            onTapOption: () {
+              Get.toNamed(AppRoutes.projectDetail, arguments: project);
+            },
+            totalTask: getProjectIdBasedTask.length.toString(),
+            deadLine: project.projectDeadLine.toString(),
+            taskModel: getProjectIdBasedTask, // Pass tasks to projectCardWithImg
+          ),
         );
       },
       options: CarouselOptions(

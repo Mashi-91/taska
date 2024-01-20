@@ -1,3 +1,4 @@
+import 'package:flutter/animation.dart';
 import 'package:taska/screen/navigation_tabs/project/createProjectScreen/setColor.dart';
 import 'package:taska/screen/navigation_tabs/project/projectDetailScreen/changeColor.dart';
 
@@ -8,10 +9,20 @@ class AppPages {
     GetPage(
       name: AppRoutes.authScreen,
       page: () => const AuthHome(),
+      curve: Curves.easeIn,
+      transition: Transition.rightToLeft,
       // middlewares: [ConnectivityMiddleware()],
     ),
-    GetPage(name: AppRoutes.onBoardingScreen, page: () => OnBoardingScreen()),
-    GetPage(name: AppRoutes.signInSignUpScreen, page: () => SignInSignUp()),
+    GetPage(
+      name: AppRoutes.onBoardingScreen,
+      page: () => OnBoardingScreen(),
+      curve: Curves.easeIn,
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.signInSignUpScreen,
+      page: () => SignInSignUp(),
+    ),
     GetPage(
       name: AppRoutes.signInScreen,
       page: () => SignInScreen(),
