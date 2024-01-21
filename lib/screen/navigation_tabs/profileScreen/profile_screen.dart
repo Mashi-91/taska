@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:taska/constant/color.dart';
 import 'package:taska/constant/utils.dart';
 import 'package:taska/routes/export.dart';
+import 'package:taska/screen/navigation_tabs/home/homeController.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>();
+    final currentUser = controller.currentUser;
+
     return Scaffold(
       appBar: Utils.customAppbarForProjectScreen(title: 'Profile'),
       body: Padding(
@@ -23,9 +27,9 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
-              'Daniel Austin',
-              style: TextStyle(
+            Text(
+              currentUser!.displayName.toString(),
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -56,11 +60,42 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Utils.buildCustomDivider(
                 width: Get.width, height: 2, color: ColorsUtil.lightGrey),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             Column(
               children: [
-                Utils.buildCustomRow(title: 'title', subTitle: 'Edit Profile'),
-                Utils.buildCustomRow(title: 'title', subTitle: 'Log Out'),
+                Utils.buildCustomRow(
+                  iconData: Icons.person_2_outlined,
+                  iconColor: ColorsUtil.lightGrey,
+                  subTitle: 'Edit Profile',
+                  textColor: ColorsUtil.lightBlack,
+                ),
+                const SizedBox(height: 18),
+                Utils.buildCustomRow(
+                  iconData: Icons.notifications_none,
+                  iconColor: ColorsUtil.lightGrey,
+                  subTitle: 'Notifications',
+                  textColor: ColorsUtil.lightBlack,
+                ),const SizedBox(height: 18),
+                Utils.buildCustomRow(
+                  iconData: Icons.security_outlined,
+                  iconColor: ColorsUtil.lightGrey,
+                  subTitle: 'Security',
+                  textColor: ColorsUtil.lightBlack,
+                ),
+                const SizedBox(height: 18),
+                Utils.buildCustomRow(
+                  iconData: Icons.info_outline,
+                  iconColor: ColorsUtil.lightGrey,
+                  subTitle: 'Help',
+                  textColor: ColorsUtil.lightBlack,
+                ),
+                const SizedBox(height: 18),
+                Utils.buildCustomRow(
+                  iconData: Icons.logout_rounded,
+                  iconColor: Colors.red,
+                  subTitle: 'Log Out',
+                  textColor: Colors.red,
+                ),
               ],
             )
           ],

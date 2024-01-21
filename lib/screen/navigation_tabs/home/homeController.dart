@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:taska/constant/utils.dart';
+import 'package:taska/model/fill_profile_model.dart';
 import 'package:taska/model/task_model.dart';
 import 'package:taska/screen/global_controller.dart';
 import '../coverScreen/cover_screen.dart';
@@ -28,6 +29,7 @@ class HomeController extends GlobalController {
   final isCover = false.obs;
   List<Color> colorList = [];
   var homeScreenTask = <TaskModel>[];
+  var userData = FillProfileModel();
 
   File? photo;
 
@@ -44,6 +46,7 @@ class HomeController extends GlobalController {
     super.onInit();
     searchController = TextEditingController();
     projectNameController = TextEditingController();
+    getUserData();
   }
 
   @override
@@ -53,6 +56,21 @@ class HomeController extends GlobalController {
     projectNameController.dispose();
   }
 
+  Future<void> getUserData() async {
+    try {
+      final userDataDoc =
+      await fireStore.collection('users').doc(currentUser?.uid).get();
+
+      if (userDataDoc.exists) {
+        userData = FillProfileModel.fromDocumentSnapshot(userDataDoc);
+        log('User data retrieved successfully.');
+      } else {
+        log('User data not found.');
+      }
+    } catch (e) {
+      log('Error fetching user data: $e');
+    }
+  }
   Stream<QuerySnapshot<Map<String, dynamic>>>?
       getAllTasksAsStreamOnHomeScreen() {
     try {
@@ -81,7 +99,7 @@ class HomeController extends GlobalController {
     currentIndex.value = i++;
   }
 
-  void setHomeTaskList(val){
+  void setHomeTaskList(val) {
     homeScreenTask = val;
     update();
   }
@@ -99,7 +117,8 @@ class HomeController extends GlobalController {
     return tasks.where((task) => task.projectId == project).toList();
   }
 
-  List<TaskModel> filterNotDoneTasksByProject(List<TaskModel> tasks, String project) {
+  List<TaskModel> filterNotDoneTasksByProject(
+      List<TaskModel> tasks, String project) {
     return filterNotDoneTasks(filterTasksByProject(tasks, project));
   }
 
@@ -109,12 +128,12 @@ class HomeController extends GlobalController {
   }
 
   // Function to get the total number of tasks from the list for showing in ProgressLine
-  Iterable<TaskModel> getTotalTasks(List<TaskModel> tasks,String projectId) {
+  Iterable<TaskModel> getTotalTasks(List<TaskModel> tasks, String projectId) {
     return tasks.where((task) => task.projectId == projectId);
   }
 
   // Function to get the number of completed tasks from the list for showing in ProgressLine
-  int getCompletedTasks(List<TaskModel> tasks,String projectId) {
+  int getCompletedTasks(List<TaskModel> tasks, String projectId) {
     return tasks
         .where((task) => task.projectId == projectId && task.isDone)
         .length;

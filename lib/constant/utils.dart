@@ -63,21 +63,27 @@ class Utils {
       ],
     );
   }
-  static buildCustomRow({required String title, required String subTitle}) {
+
+  static buildCustomRow({
+    required IconData iconData,
+    Color? iconColor,
+    required String subTitle,
+    Color? textColor,
+  }) {
     return Row(
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        Icon(
+          iconData,
+          color: iconColor,
+          size: 36,
         ),
         const SizedBox(width: 20),
         Text(
           subTitle,
-          style: const TextStyle(
-            fontSize: 12,
+          style: TextStyle(
+            fontSize: 16,
+            color: textColor,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],

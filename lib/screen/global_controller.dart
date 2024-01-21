@@ -282,7 +282,7 @@ class GlobalController extends GetxController {
             .set(createUserModel.toJson())
             .then((value) async {
           await Utils.snackBarMsg(msg: 'Your profile has been created.');
-          Get.offAllNamed("/SignIn");
+          Get.offAllNamed(AppRoutes.authScreen);
         });
       }
     } on FirebaseFirestore catch (e) {
