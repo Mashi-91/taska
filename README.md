@@ -1,6 +1,4 @@
-# Taska Task & Project Management App
 
-The Taska app UI Kit is a comprehensive Flutter UI kit designed explicitly for task and project management purposes. It offers a wide array of components and screens tailored to streamline project organization, task assignment, and productivity enhancement.
 
 ## Features
 
